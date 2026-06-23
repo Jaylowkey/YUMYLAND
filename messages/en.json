@@ -1,0 +1,268 @@
+{
+  "common": {
+    "appName": "YumyLand",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "all": "All",
+    "view": "View",
+    "close": "Close",
+    "submit": "Submit"
+  },
+  "landing": {
+    "hero": {
+      "title": "Manage your restaurant with intelligence",
+      "subtitle": "The complete platform for snack bars, restaurants, cafés, and bakeries. Digital menu, reservations, loyalty programs, and much more.",
+      "cta": "Start Free",
+      "ctaSecondary": "View Demo"
+    },
+    "features": {
+      "title": "Everything you need in one place",
+      "subtitle": "Powerful tools to transform your business",
+      "menu": {
+        "title": "Digital Menu",
+        "description": "Showcase your products with photos, prices, and promotions. Organized combos and categories."
+      },
+      "reservations": {
+        "title": "Online Reservations",
+        "description": "Your customers reserve tables by choosing date, time, and number of guests."
+      },
+      "loyalty": {
+        "title": "Loyalty Program",
+        "description": "Regular customers earn points and level up: Bronze, Silver, Gold, and Diamond."
+      },
+      "payments": {
+        "title": "Integrated Payments",
+        "description": "Receive via M-Pesa, e-Mola, Visa, and Mastercard simply and securely."
+      },
+      "pwa": {
+        "title": "Works as an App",
+        "description": "PWA that works on Android, iPhone, tablet, and computer without installing anything."
+      },
+      "dashboard": {
+        "title": "Complete Dashboard",
+        "description": "Track sales, reservations, active customers, and monthly revenue in real time."
+      }
+    },
+    "pricing": {
+      "title": "Plans that fit your budget",
+      "subtitle": "First month free. No commitment.",
+      "monthly": "/month",
+      "currency": "MZN",
+      "cta": "Start Now",
+      "popular": "Most Popular",
+      "basic": {
+        "name": "Basic",
+        "price": "499",
+        "features": ["Digital menu", "Up to 50 products", "Online reservations", "Email support"]
+      },
+      "professional": {
+        "name": "Professional",
+        "price": "999",
+        "features": ["Everything in Basic", "Unlimited products", "Loyalty program", "Integrated payments", "Priority support"]
+      },
+      "premium": {
+        "name": "Premium",
+        "price": "1,999",
+        "features": ["Everything in Professional", "Multi-branch", "Custom API", "Advanced reports", "Dedicated account manager"]
+      }
+    },
+    "cta": {
+      "title": "Ready to transform your business?",
+      "subtitle": "Join hundreds of businesses already using YumyLand",
+      "button": "Create Free Account"
+    },
+    "footer": {
+      "description": "The complete SaaS platform for managing snack bars, restaurants, cafés, and bakeries.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "features": "Features",
+      "pricing": "Pricing",
+      "about": "About",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms of Service",
+      "rights": "All rights reserved."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to your account",
+      "subtitle": "Welcome back! Access your dashboard.",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Register your business and start today.",
+      "companyName": "Company Name",
+      "ownerName": "Owner Name",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "businessType": "Business Type",
+      "types": {
+        "restaurant": "Restaurant",
+        "snackbar": "Snack Bar",
+        "cafe": "Café",
+        "bakery": "Bakery",
+        "pizzeria": "Pizzeria",
+        "bar": "Bar",
+        "foodtruck": "Food Truck"
+      },
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "agree": "By registering, you agree to our",
+      "termsLink": "Terms of Service"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "salesToday": "Sales Today",
+    "reservationsToday": "Reservations Today",
+    "activeClients": "Active Clients",
+    "monthlyRevenue": "Monthly Revenue",
+    "recentOrders": "Recent Orders",
+    "upcomingReservations": "Upcoming Reservations",
+    "nav": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "categories": "Categories",
+      "reservations": "Reservations",
+      "customers": "Customers",
+      "settings": "Settings"
+    }
+  },
+  "products": {
+    "title": "Products",
+    "addProduct": "Add Product",
+    "editProduct": "Edit Product",
+    "name": "Name",
+    "description": "Description",
+    "price": "Price",
+    "category": "Category",
+    "stock": "Stock",
+    "photo": "Photo",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "promotion": "Promotion",
+    "combo": "Combo",
+    "noProducts": "No products registered yet."
+  },
+  "categories": {
+    "title": "Categories",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "name": "Name",
+    "description": "Description",
+    "productCount": "Products",
+    "noCategories": "No categories registered yet."
+  },
+  "reservations": {
+    "title": "Reservations",
+    "date": "Date",
+    "time": "Time",
+    "guests": "Guests",
+    "customer": "Customer",
+    "status": "Status",
+    "statuses": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "complete": "Complete",
+    "noReservations": "No reservations found."
+  },
+  "customers": {
+    "title": "Customers",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "points": "Points",
+    "level": "Level",
+    "totalSpent": "Total Spent",
+    "joinDate": "Join Date",
+    "levels": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "diamond": "Diamond"
+    },
+    "loyaltyProgram": "Loyalty Program",
+    "loyaltyDescription": "100 MZN = 1 point | 100 points = 100 MZN discount",
+    "becomeLoyal": "Become a Regular Customer",
+    "digitalCard": "Digital Card",
+    "noCustomers": "No customers registered yet."
+  },
+  "menu": {
+    "title": "Menu",
+    "categories": "Categories",
+    "promotions": "Promotions",
+    "combos": "Combos",
+    "addToOrder": "Add",
+    "reserve": "Reserve Table",
+    "viewMenu": "View Menu"
+  },
+  "reserve": {
+    "title": "Reserve a Table",
+    "selectDate": "Select Date",
+    "selectTime": "Select Time",
+    "selectGuests": "Number of Guests",
+    "name": "Your Name",
+    "phone": "Your Phone",
+    "notes": "Notes",
+    "payNow": "Pay in Advance",
+    "paymentMethods": "Payment Methods",
+    "confirmReservation": "Confirm Reservation",
+    "success": "Reservation confirmed successfully!"
+  },
+  "master": {
+    "title": "Master Panel",
+    "companies": "Companies",
+    "subscriptions": "Subscriptions",
+    "billing": "Billing",
+    "statistics": "Statistics",
+    "totalCompanies": "Total Companies",
+    "totalCustomers": "Total Customers",
+    "monthlyRevenue": "Monthly Revenue",
+    "activeSubscriptions": "Active Subscriptions",
+    "companyName": "Company",
+    "plan": "Plan",
+    "status": "Status",
+    "actions": "Actions",
+    "activate": "Activate",
+    "suspend": "Suspend",
+    "renew": "Renew",
+    "plans": {
+      "basic": "Basic",
+      "professional": "Professional",
+      "premium": "Premium"
+    }
+  }
+}

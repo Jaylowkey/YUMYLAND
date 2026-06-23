@@ -1,0 +1,268 @@
+{
+  "common": {
+    "appName": "YumyLand",
+    "login": "Entrar",
+    "register": "Cadastrar",
+    "logout": "Sair",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "search": "Buscar",
+    "loading": "Carregando...",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "yes": "Sim",
+    "no": "Não",
+    "actions": "Ações",
+    "status": "Status",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "all": "Todos",
+    "view": "Ver",
+    "close": "Fechar",
+    "submit": "Enviar"
+  },
+  "landing": {
+    "hero": {
+      "title": "Gerencie sua lanchonete com inteligência",
+      "subtitle": "A plataforma completa para lanchonetes, restaurantes, cafés e pastelarias. Cardápio digital, reservas, programa de fidelidade e muito mais.",
+      "cta": "Comece Grátis",
+      "ctaSecondary": "Ver Demonstração"
+    },
+    "features": {
+      "title": "Tudo que você precisa em um só lugar",
+      "subtitle": "Ferramentas poderosas para transformar seu negócio",
+      "menu": {
+        "title": "Cardápio Digital",
+        "description": "Apresente seus produtos com fotos, preços e promoções. Combos e categorias organizados."
+      },
+      "reservations": {
+        "title": "Reservas Online",
+        "description": "Seus clientes reservam mesa escolhendo dia, horário e quantidade de pessoas."
+      },
+      "loyalty": {
+        "title": "Programa de Fidelidade",
+        "description": "Cliente fixo acumula pontos e sobe de nível: Bronze, Prata, Ouro e Diamante."
+      },
+      "payments": {
+        "title": "Pagamentos Integrados",
+        "description": "Receba via M-Pesa, e-Mola, Visa e Mastercard de forma simples e segura."
+      },
+      "pwa": {
+        "title": "Funciona como App",
+        "description": "PWA que funciona em Android, iPhone, tablet e computador sem instalar nada."
+      },
+      "dashboard": {
+        "title": "Painel Completo",
+        "description": "Acompanhe vendas, reservas, clientes ativos e receita mensal em tempo real."
+      }
+    },
+    "pricing": {
+      "title": "Planos que cabem no seu bolso",
+      "subtitle": "Primeiro mês grátis. Sem compromisso.",
+      "monthly": "/mês",
+      "currency": "MZN",
+      "cta": "Começar Agora",
+      "popular": "Mais Popular",
+      "basic": {
+        "name": "Básico",
+        "price": "499",
+        "features": ["Cardápio digital", "Até 50 produtos", "Reservas online", "Suporte por email"]
+      },
+      "professional": {
+        "name": "Profissional",
+        "price": "999",
+        "features": ["Tudo do Básico", "Produtos ilimitados", "Programa de fidelidade", "Pagamentos integrados", "Suporte prioritário"]
+      },
+      "premium": {
+        "name": "Premium",
+        "price": "1.999",
+        "features": ["Tudo do Profissional", "Multi-filiais", "API personalizada", "Relatórios avançados", "Gerente de conta dedicado"]
+      }
+    },
+    "cta": {
+      "title": "Pronto para transformar seu negócio?",
+      "subtitle": "Junte-se a centenas de empresas que já usam YumyLand",
+      "button": "Criar Conta Grátis"
+    },
+    "footer": {
+      "description": "A plataforma SaaS completa para gestão de lanchonetes, restaurantes, cafés e pastelarias.",
+      "product": "Produto",
+      "company": "Empresa",
+      "legal": "Legal",
+      "features": "Funcionalidades",
+      "pricing": "Preços",
+      "about": "Sobre",
+      "contact": "Contato",
+      "privacy": "Privacidade",
+      "terms": "Termos de Uso",
+      "rights": "Todos os direitos reservados."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar na sua conta",
+      "subtitle": "Bem-vindo de volta! Acesse seu painel.",
+      "email": "Email",
+      "password": "Senha",
+      "forgotPassword": "Esqueceu a senha?",
+      "noAccount": "Não tem conta?",
+      "signUp": "Cadastre-se"
+    },
+    "register": {
+      "title": "Criar conta",
+      "subtitle": "Cadastre sua empresa e comece hoje mesmo.",
+      "companyName": "Nome da Empresa",
+      "ownerName": "Nome do Proprietário",
+      "email": "Email",
+      "phone": "Telefone",
+      "password": "Senha",
+      "confirmPassword": "Confirmar Senha",
+      "businessType": "Tipo de Negócio",
+      "types": {
+        "restaurant": "Restaurante",
+        "snackbar": "Lanchonete",
+        "cafe": "Café",
+        "bakery": "Pastelaria",
+        "pizzeria": "Pizzaria",
+        "bar": "Bar",
+        "foodtruck": "Food Truck"
+      },
+      "hasAccount": "Já tem conta?",
+      "signIn": "Entrar",
+      "agree": "Ao cadastrar, você concorda com nossos",
+      "termsLink": "Termos de Uso"
+    }
+  },
+  "dashboard": {
+    "title": "Painel",
+    "welcome": "Bem-vindo de volta",
+    "salesToday": "Vendas Hoje",
+    "reservationsToday": "Reservas Hoje",
+    "activeClients": "Clientes Ativos",
+    "monthlyRevenue": "Receita Mensal",
+    "recentOrders": "Pedidos Recentes",
+    "upcomingReservations": "Próximas Reservas",
+    "nav": {
+      "dashboard": "Painel",
+      "products": "Produtos",
+      "categories": "Categorias",
+      "reservations": "Reservas",
+      "customers": "Clientes",
+      "settings": "Configurações"
+    }
+  },
+  "products": {
+    "title": "Produtos",
+    "addProduct": "Adicionar Produto",
+    "editProduct": "Editar Produto",
+    "name": "Nome",
+    "description": "Descrição",
+    "price": "Preço",
+    "category": "Categoria",
+    "stock": "Estoque",
+    "photo": "Foto",
+    "available": "Disponível",
+    "unavailable": "Indisponível",
+    "promotion": "Promoção",
+    "combo": "Combo",
+    "noProducts": "Nenhum produto cadastrado ainda."
+  },
+  "categories": {
+    "title": "Categorias",
+    "addCategory": "Adicionar Categoria",
+    "editCategory": "Editar Categoria",
+    "name": "Nome",
+    "description": "Descrição",
+    "productCount": "Produtos",
+    "noCategories": "Nenhuma categoria cadastrada ainda."
+  },
+  "reservations": {
+    "title": "Reservas",
+    "date": "Data",
+    "time": "Horário",
+    "guests": "Pessoas",
+    "customer": "Cliente",
+    "status": "Status",
+    "statuses": {
+      "pending": "Pendente",
+      "confirmed": "Confirmada",
+      "cancelled": "Cancelada",
+      "completed": "Concluída"
+    },
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "complete": "Concluir",
+    "noReservations": "Nenhuma reserva encontrada."
+  },
+  "customers": {
+    "title": "Clientes",
+    "name": "Nome",
+    "email": "Email",
+    "phone": "Telefone",
+    "points": "Pontos",
+    "level": "Nível",
+    "totalSpent": "Total Gasto",
+    "joinDate": "Data de Cadastro",
+    "levels": {
+      "bronze": "Bronze",
+      "silver": "Prata",
+      "gold": "Ouro",
+      "diamond": "Diamante"
+    },
+    "loyaltyProgram": "Programa de Fidelidade",
+    "loyaltyDescription": "100 MZN = 1 ponto | 100 pontos = 100 MZN de desconto",
+    "becomeLoyal": "Quero Ser Cliente Fixo",
+    "digitalCard": "Cartão Digital",
+    "noCustomers": "Nenhum cliente cadastrado ainda."
+  },
+  "menu": {
+    "title": "Cardápio",
+    "categories": "Categorias",
+    "promotions": "Promoções",
+    "combos": "Combos",
+    "addToOrder": "Adicionar",
+    "reserve": "Reservar Mesa",
+    "viewMenu": "Ver Cardápio"
+  },
+  "reserve": {
+    "title": "Reservar Mesa",
+    "selectDate": "Escolher Data",
+    "selectTime": "Escolher Horário",
+    "selectGuests": "Quantidade de Pessoas",
+    "name": "Seu Nome",
+    "phone": "Seu Telefone",
+    "notes": "Observações",
+    "payNow": "Pagar Adiantado",
+    "paymentMethods": "Formas de Pagamento",
+    "confirmReservation": "Confirmar Reserva",
+    "success": "Reserva confirmada com sucesso!"
+  },
+  "master": {
+    "title": "Painel Master",
+    "companies": "Empresas",
+    "subscriptions": "Assinaturas",
+    "billing": "Cobranças",
+    "statistics": "Estatísticas",
+    "totalCompanies": "Total de Empresas",
+    "totalCustomers": "Total de Clientes",
+    "monthlyRevenue": "Receita Mensal",
+    "activeSubscriptions": "Assinaturas Ativas",
+    "companyName": "Empresa",
+    "plan": "Plano",
+    "status": "Status",
+    "actions": "Ações",
+    "activate": "Ativar",
+    "suspend": "Suspender",
+    "renew": "Renovar",
+    "plans": {
+      "basic": "Básico",
+      "professional": "Profissional",
+      "premium": "Premium"
+    }
+  }
+}
