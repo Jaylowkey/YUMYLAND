@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const locale = pathname.startsWith("/en") ? "en" : "pt";
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     companyName: "",
     ownerName: "",
@@ -42,10 +44,72 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    setError("");
+
+    // Validate passwords match
+    if (form.password !== form.confirmPassword) {
+      setError(locale === "pt" ? "As senhas nao coincidem" : "Passwords do not match");
       setLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (form.password.length < 6) {
+      setError(
+        locale === "pt"
+          ? "A senha deve ter pelo menos 6 caracteres"
+          : "Password must be at least 6 characters"
+      );
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Call register API
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyName: form.companyName,
+          ownerName: form.ownerName,
+          email: form.email,
+          phone: form.phone,
+          password: form.password,
+          businessType: form.businessType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Registration failed");
+        setLoading(false);
+        return;
+      }
+
+      // Auto-login after successful registration
+      const signInResult = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        // Registration succeeded but auto-login failed, redirect to login
+        window.location.href = `/${locale}/login`;
+        return;
+      }
+
+      // Redirect to dashboard
       window.location.href = `/${locale}/dashboard`;
-    }, 1500);
+    } catch {
+      setError(
+        locale === "pt"
+          ? "Erro inesperado. Tente novamente."
+          : "An unexpected error occurred. Please try again."
+      );
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,11 +131,17 @@ export default function RegisterPage() {
         <p className="mt-2 text-sm text-gray-600">{t("subtitle")}</p>
       </div>
 
+      {error && (
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           id="companyName"
           label={t("companyName")}
-          placeholder="Ex: Lanchonete do João"
+          placeholder="Ex: Lanchonete do Joao"
           value={form.companyName}
           onChange={(e) => handleChange("companyName", e.target.value)}
           required
@@ -80,7 +150,7 @@ export default function RegisterPage() {
         <Input
           id="ownerName"
           label={t("ownerName")}
-          placeholder="João Silva"
+          placeholder="Joao Silva"
           value={form.ownerName}
           onChange={(e) => handleChange("ownerName", e.target.value)}
           required

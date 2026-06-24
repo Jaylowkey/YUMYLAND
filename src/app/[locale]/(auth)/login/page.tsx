@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
@@ -16,15 +17,32 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to dashboard on success
       window.location.href = `/${locale}/dashboard`;
-    }, 1500);
+    } catch {
+      setError("An unexpected error occurred");
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,6 +63,12 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
         <p className="mt-2 text-sm text-gray-600">{t("subtitle")}</p>
       </div>
+
+      {error && (
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
