@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function DashboardHeader() {
   const tc = useTranslations("common");
@@ -11,6 +12,19 @@ export default function DashboardHeader() {
   const locale = pathname.startsWith("/en") ? "en" : "pt";
   const switchLocale = locale === "pt" ? "en" : "pt";
   const [showMenu, setShowMenu] = useState(false);
+  const { data: session } = useSession();
+
+  const userName = session?.user?.name || "User";
+  const userInitials = userName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: `/${locale}/login` });
+  };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 backdrop-blur-lg px-6">
@@ -40,7 +54,7 @@ export default function DashboardHeader() {
           href={`/${switchLocale}/dashboard`}
           className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
         >
-          {switchLocale === "en" ? "🇬🇧 EN" : "🇲🇿 PT"}
+          {switchLocale === "en" ? "\uD83C\uDDEC\uD83C\uDDE7 EN" : "\uD83C\uDDF2\uD83C\uDDFF PT"}
         </Link>
 
         {/* Notifications */}
@@ -58,20 +72,25 @@ export default function DashboardHeader() {
             className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100"
           >
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-              <span className="text-xs font-bold text-white">LJ</span>
+              <span className="text-xs font-bold text-white">{userInitials}</span>
             </div>
+            <span className="hidden sm:block text-sm font-medium text-gray-700">{userName}</span>
           </button>
           {showMenu && (
             <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-lg">
-              <Link
-                href={`/${locale}/login`}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              <div className="px-4 py-2 border-b border-gray-100">
+                <p className="text-sm font-medium text-gray-900">{userName}</p>
+                <p className="text-xs text-gray-500">{session?.user?.email || ""}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 {tc("logout")}
-              </Link>
+              </button>
             </div>
           )}
         </div>

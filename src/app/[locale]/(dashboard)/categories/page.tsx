@@ -1,32 +1,40 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
 import { Category } from "@/types";
-
-const mockCategories: Category[] = [
-  { id: "1", name: "Hambúrgueres", description: "Todos os tipos de hambúrgueres", productCount: 8, companyId: "1" },
-  { id: "2", name: "Pizzas", description: "Pizzas artesanais e tradicionais", productCount: 6, companyId: "1" },
-  { id: "3", name: "Bebidas", description: "Refrigerantes, sucos e cafés", productCount: 12, companyId: "1" },
-  { id: "4", name: "Sobremesas", description: "Doces e sobremesas especiais", productCount: 5, companyId: "1" },
-  { id: "5", name: "Combos", description: "Combinações com desconto", productCount: 4, companyId: "1" },
-  { id: "6", name: "Entradas", description: "Aperitivos e entradas", productCount: 3, companyId: "1" },
-];
-
-const categoryIcons: Record<string, string> = {
-  "1": "🍔", "2": "🍕", "3": "🥤", "4": "🍰", "5": "🍱", "6": "🥗",
-};
+import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api";
 
 export default function CategoriesPage() {
   const t = useTranslations("categories");
   const tc = useTranslations("common");
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [form, setForm] = useState({ name: "", description: "" });
+  const [saving, setSaving] = useState(false);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const data = await apiGet<Category[]>("/api/categories");
+      setCategories(data);
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Failed to load categories");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const openAddModal = () => {
     setEditingCategory(null);
@@ -40,29 +48,55 @@ export default function CategoriesPage() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
-    if (editingCategory) {
-      setCategories(categories.map((c) =>
-        c.id === editingCategory.id
-          ? { ...c, name: form.name, description: form.description }
-          : c
-      ));
-    } else {
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        name: form.name,
-        description: form.description,
-        productCount: 0,
-        companyId: "1",
-      };
-      setCategories([...categories, newCategory]);
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      if (editingCategory) {
+        await apiPut(`/api/categories/${editingCategory.id}`, {
+          name: form.name,
+          description: form.description,
+        });
+      } else {
+        await apiPost("/api/categories", {
+          name: form.name,
+          description: form.description,
+        });
+      }
+      setShowModal(false);
+      await fetchCategories();
+    } catch (err: any) {
+      setError(err.message || "Failed to save category");
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    setCategories(categories.filter((c) => c.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDelete(`/api/categories/${id}`);
+      await fetchCategories();
+    } catch (err: any) {
+      setError(err.message || "Failed to delete category");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-gray-100 rounded animate-pulse mt-2" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="card h-32 animate-pulse bg-gray-100" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -79,6 +113,11 @@ export default function CategoriesPage() {
           {t("addCategory")}
         </Button>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+      )}
 
       {/* Categories Grid */}
       {categories.length === 0 ? (
@@ -98,7 +137,7 @@ export default function CategoriesPage() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-xl bg-primary-50 flex items-center justify-center text-2xl">
-                    {categoryIcons[category.id] || "📁"}
+                    📁
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">{category.name}</h3>
@@ -127,7 +166,7 @@ export default function CategoriesPage() {
               <div className="mt-4 pt-3 border-t border-gray-100">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">{t("productCount")}</span>
-                  <span className="text-sm font-semibold text-gray-900">{category.productCount}</span>
+                  <span className="text-sm font-semibold text-gray-900">{category.productCount || 0}</span>
                 </div>
               </div>
             </div>
@@ -147,21 +186,21 @@ export default function CategoriesPage() {
             label={t("name")}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Ex: Hambúrgueres"
+            placeholder="Ex: Hamburgueres"
           />
           <Input
             id="categoryDesc"
             label={t("description")}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Descrição da categoria"
+            placeholder="Descricao da categoria"
           />
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <Button variant="secondary" onClick={() => setShowModal(false)}>
               {tc("cancel")}
             </Button>
-            <Button onClick={handleSave}>
-              {tc("save")}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Salvando..." : tc("save")}
             </Button>
           </div>
         </div>

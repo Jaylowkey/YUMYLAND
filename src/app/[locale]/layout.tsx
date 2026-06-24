@@ -4,6 +4,7 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales } from "@/i18n/config";
 import PWARegister from "@/components/PWARegister";
+import SessionProvider from "@/components/SessionProvider";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -41,9 +42,11 @@ export default async function LocaleLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className={inter.className}>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+        <SessionProvider>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+          </NextIntlClientProvider>
+        </SessionProvider>
         <PWARegister />
       </body>
     </html>

@@ -1,110 +1,71 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/utils";
-import { Product } from "@/types";
-
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    name: "Hambúrguer Clássico",
-    description: "Pão, carne 150g, queijo, alface, tomate",
-    price: 350,
-    categoryId: "1",
-    categoryName: "Hambúrgueres",
-    stock: 50,
-    available: true,
-    isPromotion: false,
-    isCombo: false,
-    companyId: "1",
-  },
-  {
-    id: "2",
-    name: "Combo Família",
-    description: "4 Hambúrgueres + 4 Batatas + 4 Refrigerantes",
-    price: 1200,
-    categoryId: "1",
-    categoryName: "Combos",
-    stock: 20,
-    available: true,
-    isPromotion: true,
-    promotionPrice: 999,
-    isCombo: true,
-    comboItems: ["Hambúrguer x4", "Batata x4", "Refrigerante x4"],
-    companyId: "1",
-  },
-  {
-    id: "3",
-    name: "Pizza Margherita",
-    description: "Molho de tomate, mozzarella, manjericão fresco",
-    price: 650,
-    categoryId: "2",
-    categoryName: "Pizzas",
-    stock: 15,
-    available: true,
-    isPromotion: false,
-    isCombo: false,
-    companyId: "1",
-  },
-  {
-    id: "4",
-    name: "Café Expresso",
-    description: "Café arábica puro, 50ml",
-    price: 80,
-    categoryId: "3",
-    categoryName: "Bebidas",
-    stock: 100,
-    available: true,
-    isPromotion: false,
-    isCombo: false,
-    companyId: "1",
-  },
-  {
-    id: "5",
-    name: "Pastel de Nata",
-    description: "Pastel tradicional português",
-    price: 45,
-    categoryId: "4",
-    categoryName: "Sobremesas",
-    stock: 0,
-    available: false,
-    isPromotion: false,
-    isCombo: false,
-    companyId: "1",
-  },
-];
-
-const categories = [
-  { value: "1", label: "Hambúrgueres" },
-  { value: "2", label: "Pizzas" },
-  { value: "3", label: "Bebidas" },
-  { value: "4", label: "Sobremesas" },
-  { value: "5", label: "Combos" },
-];
+import { Product, Category } from "@/types";
+import { apiGet, apiPost, apiPut, apiDelete, apiPatch } from "@/lib/api";
 
 export default function ProductsPage() {
   const t = useTranslations("products");
   const tc = useTranslations("common");
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
     description: "",
     price: "",
-    categoryId: "1",
+    categoryId: "",
     stock: "",
     isPromotion: false,
     promotionPrice: "",
     isCombo: false,
   });
+
+  const fetchProducts = async (search?: string) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      const url = `/api/products${params.toString() ? `?${params.toString()}` : ""}`;
+      const data = await apiGet<{ products: Product[]; total: number } | Product[]>(url);
+      if (Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        setProducts(data.products || []);
+      }
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const data = await apiGet<Category[]>("/api/categories");
+      setCategories(data.map((c) => ({ value: c.id, label: c.name })));
+    } catch {
+      // Non-critical, use empty categories
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
 
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -112,7 +73,7 @@ export default function ProductsPage() {
 
   const openAddModal = () => {
     setEditingProduct(null);
-    setForm({ name: "", description: "", price: "", categoryId: "1", stock: "", isPromotion: false, promotionPrice: "", isCombo: false });
+    setForm({ name: "", description: "", price: "", categoryId: categories[0]?.value || "", stock: "", isPromotion: false, promotionPrice: "", isCombo: false });
     setShowModal(true);
   };
 
@@ -131,53 +92,73 @@ export default function ProductsPage() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
-    if (editingProduct) {
-      setProducts(products.map((p) =>
-        p.id === editingProduct.id
-          ? {
-              ...p,
-              name: form.name,
-              description: form.description,
-              price: Number(form.price),
-              categoryId: form.categoryId,
-              categoryName: categories.find((c) => c.value === form.categoryId)?.label,
-              stock: Number(form.stock),
-              isPromotion: form.isPromotion,
-              promotionPrice: form.isPromotion ? Number(form.promotionPrice) : undefined,
-              isCombo: form.isCombo,
-            }
-          : p
-      ));
-    } else {
-      const newProduct: Product = {
-        id: Date.now().toString(),
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const body = {
         name: form.name,
         description: form.description,
         price: Number(form.price),
         categoryId: form.categoryId,
-        categoryName: categories.find((c) => c.value === form.categoryId)?.label,
         stock: Number(form.stock),
-        available: Number(form.stock) > 0,
         isPromotion: form.isPromotion,
         promotionPrice: form.isPromotion ? Number(form.promotionPrice) : undefined,
         isCombo: form.isCombo,
-        companyId: "1",
+        available: Number(form.stock) > 0,
       };
-      setProducts([...products, newProduct]);
+      if (editingProduct) {
+        await apiPut(`/api/products/${editingProduct.id}`, body);
+      } else {
+        await apiPost("/api/products", body);
+      }
+      setShowModal(false);
+      await fetchProducts();
+    } catch (err: any) {
+      setError(err.message || "Failed to save product");
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    setProducts(products.filter((p) => p.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDelete(`/api/products/${id}`);
+      await fetchProducts();
+    } catch (err: any) {
+      setError(err.message || "Failed to delete product");
+    }
   };
 
-  const toggleAvailability = (id: string) => {
-    setProducts(products.map((p) =>
-      p.id === id ? { ...p, available: !p.available } : p
-    ));
+  const toggleAvailability = async (id: string) => {
+    const product = products.find((p) => p.id === id);
+    if (!product) return;
+    try {
+      await apiPatch(`/api/products/${id}`, { available: !product.available });
+      await fetchProducts();
+    } catch (err: any) {
+      setError(err.message || "Failed to update product");
+    }
   };
+
+  if (loading && products.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-gray-100 rounded animate-pulse mt-2" />
+          </div>
+        </div>
+        <div className="card overflow-hidden p-0">
+          <div className="space-y-4 p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -194,6 +175,11 @@ export default function ProductsPage() {
           {t("addProduct")}
         </Button>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+      )}
 
       {/* Search */}
       <div className="relative max-w-md">
@@ -237,7 +223,7 @@ export default function ProductsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg">
-                          {product.isCombo ? "🍱" : "🍔"}
+                          {product.isCombo ? "\uD83C\uDF71" : "\uD83C\uDF54"}
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{product.name}</p>
@@ -323,14 +309,14 @@ export default function ProductsPage() {
             label={t("name")}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Ex: Hambúrguer Especial"
+            placeholder="Ex: Hamburguer Especial"
           />
           <Input
             id="productDesc"
             label={t("description")}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Descrição do produto"
+            placeholder="Descricao do produto"
           />
           <div className="grid grid-cols-2 gap-4">
             <Input
@@ -384,15 +370,15 @@ export default function ProductsPage() {
               type="number"
               value={form.promotionPrice}
               onChange={(e) => setForm({ ...form, promotionPrice: e.target.value })}
-              placeholder="Preço promocional"
+              placeholder="Preco promocional"
             />
           )}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <Button variant="secondary" onClick={() => setShowModal(false)}>
               {tc("cancel")}
             </Button>
-            <Button onClick={handleSave}>
-              {tc("save")}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Salvando..." : tc("save")}
             </Button>
           </div>
         </div>

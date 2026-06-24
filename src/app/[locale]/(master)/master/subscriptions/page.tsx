@@ -1,18 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Subscription } from "@/types";
-
-const mockSubscriptions: Subscription[] = [
-  { id: "1", companyId: "1", companyName: "Lanchonete do João", plan: "professional", status: "active", startDate: "2024-01-15", endDate: "2025-01-15", amount: 999, paymentMethod: "mpesa" },
-  { id: "2", companyId: "2", companyName: "Café Maputo", plan: "basic", status: "active", startDate: "2024-03-20", endDate: "2025-03-20", amount: 499, paymentMethod: "emola" },
-  { id: "3", companyId: "3", companyName: "Restaurante Sol", plan: "premium", status: "active", startDate: "2024-02-10", endDate: "2025-02-10", amount: 1999, paymentMethod: "visa" },
-  { id: "4", companyId: "4", companyName: "Pastelaria Rosa", plan: "basic", status: "trial", startDate: "2024-12-01", endDate: "2025-01-01", amount: 0, paymentMethod: "mpesa" },
-  { id: "5", companyId: "5", companyName: "Pizzaria do Bairro", plan: "professional", status: "suspended", startDate: "2024-06-15", endDate: "2024-12-15", amount: 999, paymentMethod: "emola" },
-  { id: "6", companyId: "6", companyName: "Bar Central", plan: "premium", status: "active", startDate: "2024-04-22", endDate: "2025-04-22", amount: 1999, paymentMethod: "mastercard" },
-];
+import { apiGet, apiPatch } from "@/lib/api";
 
 const methodLabels: Record<string, string> = {
   mpesa: "M-Pesa", emola: "e-Mola", visa: "Visa", mastercard: "Mastercard",
@@ -20,24 +12,71 @@ const methodLabels: Record<string, string> = {
 
 export default function MasterSubscriptionsPage() {
   const t = useTranslations("master");
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(mockSubscriptions);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+
+  const fetchSubscriptions = async () => {
+    try {
+      setLoading(true);
+      const data = await apiGet<Subscription[]>("/api/master/subscriptions");
+      setSubscriptions(data);
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Failed to load subscriptions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscriptions();
+  }, []);
 
   const filtered = filter === "all"
     ? subscriptions
     : subscriptions.filter((s) => s.status === filter);
 
-  const updateStatus = (id: string, status: Subscription["status"]) => {
-    setSubscriptions(subscriptions.map((s) => s.id === id ? { ...s, status } : s));
+  const updateStatus = async (id: string, status: Subscription["status"]) => {
+    try {
+      await apiPatch(`/api/master/subscriptions/${id}`, { status });
+      await fetchSubscriptions();
+    } catch (err: any) {
+      setError(err.message || "Failed to update subscription");
+    }
   };
+
+  if (loading && subscriptions.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="h-8 w-48 bg-gray-700 rounded animate-pulse" />
+          <div className="h-4 w-64 bg-gray-800 rounded animate-pulse mt-2" />
+        </div>
+        <div className="rounded-xl border border-gray-800 bg-gray-800/50 overflow-hidden">
+          <div className="space-y-4 p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-12 bg-gray-700 rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">{t("subscriptions")}</h1>
-        <p className="text-sm text-gray-400">Gestão de assinaturas das empresas</p>
+        <p className="text-sm text-gray-400">Gestao de assinaturas das empresas</p>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg bg-red-900/30 border border-red-800 p-3 text-sm text-red-300">{error}</div>
+      )}
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
@@ -88,14 +127,14 @@ export default function MasterSubscriptionsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-white font-medium">
-                      {sub.amount === 0 ? "Grátis" : `${formatCurrency(sub.amount)}/mês`}
+                      {sub.amount === 0 ? "Gratis" : `${formatCurrency(sub.amount)}/mes`}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-gray-300">{methodLabels[sub.paymentMethod]}</span>
+                    <span className="text-gray-300">{methodLabels[sub.paymentMethod] || sub.paymentMethod}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-gray-400 text-xs">{sub.startDate} → {sub.endDate}</span>
+                    <span className="text-gray-400 text-xs">{sub.startDate} - {sub.endDate}</span>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${

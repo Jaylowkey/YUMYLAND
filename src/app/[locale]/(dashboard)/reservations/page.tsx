@@ -1,92 +1,47 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { Reservation } from "@/types";
-
-const mockReservations: Reservation[] = [
-  {
-    id: "1",
-    customerName: "Roberto Machava",
-    customerPhone: "+258 84 555 1234",
-    date: "2024-12-20",
-    time: "19:00",
-    guests: 4,
-    status: "pending",
-    notes: "Mesa perto da janela",
-    prepaid: true,
-    amount: 2500,
-    companyId: "1",
-    createdAt: "2024-12-18",
-  },
-  {
-    id: "2",
-    customerName: "Família Neto",
-    customerPhone: "+258 85 666 7890",
-    date: "2024-12-20",
-    time: "20:00",
-    guests: 6,
-    status: "confirmed",
-    prepaid: false,
-    companyId: "1",
-    createdAt: "2024-12-17",
-  },
-  {
-    id: "3",
-    customerName: "Joana Pereira",
-    customerPhone: "+258 84 333 4567",
-    date: "2024-12-21",
-    time: "12:30",
-    guests: 2,
-    status: "confirmed",
-    notes: "Aniversário, trazer bolo",
-    prepaid: true,
-    amount: 1800,
-    companyId: "1",
-    createdAt: "2024-12-16",
-  },
-  {
-    id: "4",
-    customerName: "Carlos Mondlane",
-    customerPhone: "+258 86 222 3456",
-    date: "2024-12-19",
-    time: "13:00",
-    guests: 3,
-    status: "completed",
-    prepaid: false,
-    companyId: "1",
-    createdAt: "2024-12-15",
-  },
-  {
-    id: "5",
-    customerName: "Ana Sofia",
-    customerPhone: "+258 84 111 2345",
-    date: "2024-12-19",
-    time: "19:30",
-    guests: 2,
-    status: "cancelled",
-    prepaid: false,
-    companyId: "1",
-    createdAt: "2024-12-15",
-  },
-];
+import { apiGet, apiPatch } from "@/lib/api";
 
 export default function ReservationsPage() {
   const t = useTranslations("reservations");
   const tc = useTranslations("common");
-  const [reservations, setReservations] = useState<Reservation[]>(mockReservations);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [filter, setFilter] = useState<string>("all");
 
-  const filteredReservations = filter === "all"
-    ? reservations
-    : reservations.filter((r) => r.status === filter);
+  const fetchReservations = async (status?: string) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (status && status !== "all") params.set("status", status);
+      const url = `/api/reservations${params.toString() ? `?${params.toString()}` : ""}`;
+      const data = await apiGet<Reservation[]>(url);
+      setReservations(data);
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Failed to load reservations");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const updateStatus = (id: string, status: Reservation["status"]) => {
-    setReservations(reservations.map((r) =>
-      r.id === id ? { ...r, status } : r
-    ));
+  useEffect(() => {
+    fetchReservations(filter);
+  }, [filter]);
+
+  const updateStatus = async (id: string, status: Reservation["status"]) => {
+    try {
+      await apiPatch(`/api/reservations/${id}`, { status });
+      await fetchReservations(filter);
+    } catch (err: any) {
+      setError(err.message || "Failed to update reservation");
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -107,6 +62,22 @@ export default function ReservationsPage() {
     { value: "cancelled", label: t("statuses.cancelled") },
   ];
 
+  if (loading && reservations.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-32 bg-gray-100 rounded animate-pulse mt-2" />
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="card h-24 animate-pulse bg-gray-100" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -114,6 +85,11 @@ export default function ReservationsPage() {
         <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
         <p className="text-sm text-gray-500">{reservations.length} reservas no total</p>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
@@ -133,7 +109,7 @@ export default function ReservationsPage() {
       </div>
 
       {/* Reservations List */}
-      {filteredReservations.length === 0 ? (
+      {reservations.length === 0 ? (
         <div className="card text-center py-12">
           <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -142,7 +118,7 @@ export default function ReservationsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredReservations.map((reservation) => (
+          {reservations.map((reservation) => (
             <div key={reservation.id} className="card hover:shadow-md transition-shadow">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 {/* Left: Info */}

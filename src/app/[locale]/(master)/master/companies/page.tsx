@@ -1,39 +1,73 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import { Company } from "@/types";
-
-const mockCompanies: Company[] = [
-  { id: "1", name: "Lanchonete do João", ownerName: "João Silva", email: "joao@email.com", phone: "+258 84 555 1234", type: "snackbar", plan: "professional", status: "active", createdAt: "2024-01-15", slug: "lanchonete-do-joao" },
-  { id: "2", name: "Café Maputo", ownerName: "Maria Costa", email: "maria@cafe.com", phone: "+258 85 666 7890", type: "cafe", plan: "basic", status: "active", createdAt: "2024-03-20", slug: "cafe-maputo" },
-  { id: "3", name: "Restaurante Sol", ownerName: "Carlos Neto", email: "carlos@sol.com", phone: "+258 84 333 4567", type: "restaurant", plan: "premium", status: "active", createdAt: "2024-02-10", slug: "restaurante-sol" },
-  { id: "4", name: "Pastelaria Rosa", ownerName: "Ana Rosa", email: "ana@rosa.com", phone: "+258 86 222 3456", type: "bakery", plan: "basic", status: "trial", createdAt: "2024-12-01", slug: "pastelaria-rosa" },
-  { id: "5", name: "Pizzaria do Bairro", ownerName: "Pedro Almeida", email: "pedro@pizza.com", phone: "+258 84 111 2345", type: "pizzeria", plan: "professional", status: "suspended", createdAt: "2024-06-15", slug: "pizzaria-do-bairro" },
-  { id: "6", name: "Bar Central", ownerName: "Sofia Machava", email: "sofia@bar.com", phone: "+258 84 777 8901", type: "bar", plan: "premium", status: "active", createdAt: "2024-04-22", slug: "bar-central" },
-];
+import { apiGet, apiPatch } from "@/lib/api";
 
 const typeLabels: Record<string, string> = {
-  snackbar: "Lanchonete", restaurant: "Restaurante", cafe: "Café",
+  snackbar: "Lanchonete", restaurant: "Restaurante", cafe: "Cafe",
   bakery: "Pastelaria", pizzeria: "Pizzaria", bar: "Bar", foodtruck: "Food Truck",
 };
 
 export default function MasterCompaniesPage() {
   const t = useTranslations("master");
   const tc = useTranslations("common");
-  const [companies, setCompanies] = useState<Company[]>(mockCompanies);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const fetchCompanies = async () => {
+    try {
+      setLoading(true);
+      const data = await apiGet<Company[]>("/api/master/companies");
+      setCompanies(data);
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Failed to load companies");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
   const filteredCompanies = companies.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const updateStatus = (id: string, status: Company["status"]) => {
-    setCompanies(companies.map((c) => c.id === id ? { ...c, status } : c));
+  const updateStatus = async (id: string, status: Company["status"]) => {
+    try {
+      await apiPatch(`/api/master/companies/${id}`, { status });
+      await fetchCompanies();
+    } catch (err: any) {
+      setError(err.message || "Failed to update company");
+    }
   };
+
+  if (loading && companies.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="h-8 w-48 bg-gray-700 rounded animate-pulse" />
+          <div className="h-4 w-32 bg-gray-800 rounded animate-pulse mt-2" />
+        </div>
+        <div className="rounded-xl border border-gray-800 bg-gray-800/50 overflow-hidden">
+          <div className="space-y-4 p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-12 bg-gray-700 rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -57,6 +91,11 @@ export default function MasterCompaniesPage() {
         </div>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg bg-red-900/30 border border-red-800 p-3 text-sm text-red-300">{error}</div>
+      )}
+
       {/* Companies Table */}
       <div className="rounded-xl border border-gray-800 bg-gray-800/50 overflow-hidden">
         <div className="overflow-x-auto">
@@ -77,11 +116,11 @@ export default function MasterCompaniesPage() {
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-medium text-white">{company.name}</p>
-                      <p className="text-xs text-gray-500">{company.ownerName} • {company.email}</p>
+                      <p className="text-xs text-gray-500">{company.ownerName} - {company.email}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-gray-300">{typeLabels[company.type]}</span>
+                    <span className="text-gray-300">{typeLabels[company.type] || company.type}</span>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${

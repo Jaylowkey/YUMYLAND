@@ -3,9 +3,10 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { apiPost } from "@/lib/api";
 
 const timeSlots = [
   "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
@@ -19,10 +20,14 @@ export default function ReservePage() {
   const t = useTranslations("reserve");
   const tc = useTranslations("common");
   const pathname = usePathname();
+  const params = useParams();
   const locale = pathname.startsWith("/en") ? "en" : "pt";
+  const slug = params.slug as string;
 
   const [step, setStep] = useState(1);
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     date: "",
     time: "",
@@ -34,26 +39,75 @@ export default function ReservePage() {
     paymentMethod: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess(true);
+    try {
+      setSubmitting(true);
+      setError("");
+
+      // Submit reservation
+      const reservationData = {
+        slug,
+        customerName: form.name,
+        customerPhone: form.phone,
+        date: form.date,
+        time: form.time,
+        guests: form.guests,
+        notes: form.notes,
+        payNow: form.payNow,
+        paymentMethod: form.paymentMethod || undefined,
+      };
+
+      const result = await apiPost<{ id: string; amount?: number }>("/api/public/reserve", reservationData);
+
+      // If payNow is selected, initiate payment
+      if (form.payNow && form.paymentMethod && result.id) {
+        const amount = result.amount || 2500; // Default reservation deposit
+
+        if (form.paymentMethod === "mpesa" || form.paymentMethod === "emola") {
+          // Use PaySuite for M-Pesa and e-Mola
+          await apiPost("/api/payments/paysuite/initiate", {
+            reservationId: result.id,
+            amount,
+            phone: form.phone,
+            method: form.paymentMethod,
+          });
+        } else if (form.paymentMethod === "visa" || form.paymentMethod === "mastercard") {
+          // Use Stripe for Visa/Mastercard
+          await apiPost("/api/payments/stripe/create-intent", {
+            reservationId: result.id,
+            amount,
+            method: form.paymentMethod,
+          });
+        }
+      }
+
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to submit reservation");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <div className="text-6xl mb-6">✅</div>
+          <div className="text-6xl mb-6">\u2705</div>
           <h1 className="text-2xl font-bold text-gray-900">{t("success")}</h1>
           <p className="mt-3 text-gray-600">
-            {form.date} às {form.time} • {form.guests} pessoas
+            {form.date} as {form.time} - {form.guests} pessoas
           </p>
+          {form.payNow && (
+            <p className="mt-2 text-sm text-green-600">Pagamento iniciado via {form.paymentMethod.toUpperCase()}</p>
+          )}
           <div className="mt-6 space-y-3">
             <Link
-              href={`/${locale}/menu/lanchonete-do-joao`}
+              href={`/${locale}/menu/${slug}`}
               className="block btn-primary text-center"
             >
-              Ver Cardápio
+              Ver Cardapio
             </Link>
             <Link
               href={`/${locale}`}
@@ -73,18 +127,23 @@ export default function ReservePage() {
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
         <div className="mx-auto max-w-3xl px-4 py-8">
           <Link
-            href={`/${locale}/menu/lanchonete-do-joao`}
+            href={`/${locale}/menu/${slug}`}
             className="inline-flex items-center gap-1 text-sm text-blue-100 hover:text-white mb-4"
           >
             ← {tc("back")}
           </Link>
-          <h1 className="text-2xl font-bold">📅 {t("title")}</h1>
-          <p className="mt-1 text-blue-100">Lanchonete do João</p>
+          <h1 className="text-2xl font-bold">\uD83D\uDCC5 {t("title")}</h1>
+          <p className="mt-1 text-blue-100">{slug.replace(/-/g, " ")}</p>
         </div>
       </div>
 
       <div className="mx-auto max-w-3xl px-4 -mt-4">
         <form onSubmit={handleSubmit} className="card">
+          {/* Error */}
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 mb-4">{error}</div>
+          )}
+
           {/* Progress Steps */}
           <div className="flex items-center justify-center gap-2 mb-8">
             {[1, 2, 3].map((s) => (
@@ -184,7 +243,7 @@ export default function ReservePage() {
                 label={t("name")}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="João Silva"
+                placeholder="Joao Silva"
                 required
               />
               <Input
@@ -201,7 +260,7 @@ export default function ReservePage() {
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  placeholder="Ex: Mesa perto da janela, aniversário..."
+                  placeholder="Ex: Mesa perto da janela, aniversario..."
                   className="input min-h-[80px] resize-none"
                   rows={3}
                 />
@@ -239,11 +298,11 @@ export default function ReservePage() {
               <div className="rounded-lg bg-blue-50 p-4">
                 <h3 className="font-medium text-gray-900 mb-2">Resumo da Reserva</h3>
                 <div className="space-y-1 text-sm text-gray-600">
-                  <p>📅 {form.date} às {form.time}</p>
-                  <p>👥 {form.guests} pessoas</p>
-                  <p>👤 {form.name}</p>
-                  <p>📞 {form.phone}</p>
-                  {form.notes && <p>📝 {form.notes}</p>}
+                  <p>\uD83D\uDCC5 {form.date} as {form.time}</p>
+                  <p>\uD83D\uDC65 {form.guests} pessoas</p>
+                  <p>\uD83D\uDC64 {form.name}</p>
+                  <p>\uD83D\uDCDE {form.phone}</p>
+                  {form.notes && <p>\uD83D\uDCDD {form.notes}</p>}
                 </div>
               </div>
 
@@ -266,10 +325,10 @@ export default function ReservePage() {
                   <label className="label">{t("paymentMethods")}</label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: "mpesa", name: "M-Pesa", icon: "📱" },
-                      { id: "emola", name: "e-Mola", icon: "💳" },
-                      { id: "visa", name: "Visa", icon: "💳" },
-                      { id: "mastercard", name: "Mastercard", icon: "💳" },
+                      { id: "mpesa", name: "M-Pesa", icon: "\uD83D\uDCF1" },
+                      { id: "emola", name: "e-Mola", icon: "\uD83D\uDCB3" },
+                      { id: "visa", name: "Visa", icon: "\uD83D\uDCB3" },
+                      { id: "mastercard", name: "Mastercard", icon: "\uD83D\uDCB3" },
                     ].map((method) => (
                       <button
                         key={method.id}
@@ -301,8 +360,8 @@ export default function ReservePage() {
                 >
                   ← {tc("back")}
                 </Button>
-                <Button type="submit" className="flex-1" size="lg">
-                  ✓ {t("confirmReservation")}
+                <Button type="submit" className="flex-1" size="lg" disabled={submitting}>
+                  {submitting ? "Enviando..." : `\u2713 ${t("confirmReservation")}`}
                 </Button>
               </div>
             </div>

@@ -1,114 +1,88 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Badge from "@/components/ui/Badge";
 import { Customer } from "@/types";
 import { formatCurrency, getLoyaltyColor } from "@/lib/utils";
-
-const mockCustomers: Customer[] = [
-  {
-    id: "1",
-    name: "Maria Silva",
-    email: "maria@email.com",
-    phone: "+258 84 555 1234",
-    points: 1250,
-    level: "diamond",
-    totalSpent: 125000,
-    joinDate: "2024-01-15",
-    companyId: "1",
-    digitalCardId: "YL-001-DIA",
-  },
-  {
-    id: "2",
-    name: "Carlos Mondlane",
-    email: "carlos@email.com",
-    phone: "+258 85 666 7890",
-    points: 680,
-    level: "gold",
-    totalSpent: 68000,
-    joinDate: "2024-03-20",
-    companyId: "1",
-    digitalCardId: "YL-002-GLD",
-  },
-  {
-    id: "3",
-    name: "Ana Costa",
-    email: "ana@email.com",
-    phone: "+258 84 333 4567",
-    points: 320,
-    level: "silver",
-    totalSpent: 32000,
-    joinDate: "2024-05-10",
-    companyId: "1",
-    digitalCardId: "YL-003-SLV",
-  },
-  {
-    id: "4",
-    name: "Pedro João",
-    email: "pedro@email.com",
-    phone: "+258 86 222 3456",
-    points: 150,
-    level: "bronze",
-    totalSpent: 15000,
-    joinDate: "2024-08-05",
-    companyId: "1",
-    digitalCardId: "YL-004-BRZ",
-  },
-  {
-    id: "5",
-    name: "Sofia Neto",
-    email: "sofia@email.com",
-    phone: "+258 84 111 2345",
-    points: 89,
-    level: "bronze",
-    totalSpent: 8900,
-    joinDate: "2024-09-12",
-    companyId: "1",
-    digitalCardId: "YL-005-BRZ",
-  },
-  {
-    id: "6",
-    name: "Roberto Machava",
-    email: "roberto@email.com",
-    phone: "+258 84 777 8901",
-    points: 450,
-    level: "silver",
-    totalSpent: 45000,
-    joinDate: "2024-04-22",
-    companyId: "1",
-    digitalCardId: "YL-006-SLV",
-  },
-];
+import { apiGet } from "@/lib/api";
 
 const levelIcons: Record<string, string> = {
-  bronze: "🥉",
-  silver: "🥈",
-  gold: "🥇",
-  diamond: "💎",
+  bronze: "\uD83E\uDD49",
+  silver: "\uD83E\uDD48",
+  gold: "\uD83E\uDD47",
+  diamond: "\uD83D\uDC8E",
 };
 
 export default function CustomersPage() {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
-  const [customers] = useState<Customer[]>(mockCustomers);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
 
-  const filteredCustomers = customers.filter((c) => {
-    const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = levelFilter === "all" || c.level === levelFilter;
-    return matchesSearch && matchesLevel;
-  });
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (searchTerm) params.set("search", searchTerm);
+      if (levelFilter !== "all") params.set("level", levelFilter);
+      const url = `/api/customers${params.toString() ? `?${params.toString()}` : ""}`;
+      const data = await apiGet<{ customers: Customer[]; total: number } | Customer[]>(url);
+      if (Array.isArray(data)) {
+        setCustomers(data);
+      } else {
+        setCustomers(data.customers || []);
+      }
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Failed to load customers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [levelFilter]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchCustomers();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const filteredCustomers = customers;
 
   const levelFilters = [
     { value: "all", label: tc("all") },
-    { value: "diamond", label: `💎 ${t("levels.diamond")}` },
-    { value: "gold", label: `🥇 ${t("levels.gold")}` },
-    { value: "silver", label: `🥈 ${t("levels.silver")}` },
-    { value: "bronze", label: `🥉 ${t("levels.bronze")}` },
+    { value: "diamond", label: `\uD83D\uDC8E ${t("levels.diamond")}` },
+    { value: "gold", label: `\uD83E\uDD47 ${t("levels.gold")}` },
+    { value: "silver", label: `\uD83E\uDD48 ${t("levels.silver")}` },
+    { value: "bronze", label: `\uD83E\uDD49 ${t("levels.bronze")}` },
   ];
+
+  if (loading && customers.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-32 bg-gray-100 rounded animate-pulse mt-2" />
+        </div>
+        <div className="card h-32 animate-pulse bg-gray-100" />
+        <div className="card overflow-hidden p-0">
+          <div className="space-y-4 p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -118,12 +92,17 @@ export default function CustomersPage() {
         <p className="text-sm text-gray-500">{customers.length} clientes cadastrados</p>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+      )}
+
       {/* Loyalty Program Info */}
       <div className="card bg-gradient-to-r from-primary-50 to-yellow-50 border-primary-100">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              ⭐ {t("loyaltyProgram")}
+              \u2B50 {t("loyaltyProgram")}
             </h2>
             <p className="text-sm text-gray-600 mt-1">{t("loyaltyDescription")}</p>
           </div>
