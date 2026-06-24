@@ -5,165 +5,113 @@
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791)
+![Prisma](https://img.shields.io/badge/Prisma-5-2D3748)
 ![PWA](https://img.shields.io/badge/PWA-Ready-purple)
 
-## 📋 Funcionalidades
+## 🚀 Quick Start
 
-### Landing Page
-- Hero section com CTA
-- Seção de funcionalidades
-- Planos e preços (Básico 499, Profissional 999, Premium 1.999 MZN/mês)
-- Primeiro mês grátis
+```bash
+# 1. Clone e instale
+git clone https://github.com/Jaylowkey/YUMYLAND.git
+cd YUMYLAND
+npm install
 
-### Autenticação
-- Login
-- Cadastro de empresa (7 tipos de negócio)
+# 2. Suba o PostgreSQL
+docker compose up -d
 
-### Painel da Empresa (Dashboard)
-- Vendas hoje
-- Reservas hoje
-- Clientes ativos
-- Receita mensal
-- Pedidos recentes
-- Próximas reservas
+# 3. Configure as variáveis
+cp .env.example .env
 
-### Gestão de Produtos
-- CRUD completo
-- Fotos, preços, estoque
-- Promoções e combos
-- Filtro por categoria
+# 4. Crie as tabelas e popule
+npx prisma migrate dev --name init
+npx prisma db seed
 
-### Gestão de Categorias
-- Cards com ícones
-- Contagem de produtos
+# 5. Rode!
+npm run dev
+```
 
-### Reservas
-- Lista com filtros de status
-- Confirmar / Cancelar / Concluir
-- Pagamento antecipado
+Acesse: **http://localhost:3000**
 
-### Clientes & Programa de Fidelidade
-- Tabela de clientes
-- Cartão digital
-- Acúmulo de pontos (100 MZN = 1 ponto)
-- Níveis: 🥉 Bronze → 🥈 Prata → 🥇 Ouro → 💎 Diamante
-- 100 pontos = 100 MZN de desconto
+## 👤 Contas de Teste
 
-### Área do Cliente (Público)
-- Cardápio digital com fotos e preços
-- Promoções e combos
-- Reserva de mesa (wizard 3 passos)
-- Pagamento antecipado (M-Pesa, e-Mola, Visa, Mastercard)
-- Modal "Quero Ser Cliente Fixo"
+| Email | Senha | Acesso |
+|-------|-------|--------|
+| `master@yumyland.co.mz` | `master123` | Painel Master (Admin) |
+| `carlos@tropical.co.mz` | `owner123` | Dashboard Empresa |
+| `ana@cafemaputo.co.mz` | `owner123` | Dashboard Empresa |
 
-### Painel Master (Admin)
-- Estatísticas gerais
-- Gestão de empresas
-- Gestão de assinaturas (Ativar/Suspender/Renovar)
-- Cobranças e histórico de pagamentos
-- Distribuição de planos
-- Receita por método de pagamento
-
-### Internacionalização
-- 🇲🇿 Português (padrão)
-- 🇬🇧 Inglês
-
-### PWA (Progressive Web App)
-- Funciona como app nativo
-- Android, iPhone, Tablet, Computador
-- Offline page
-- Service Worker com cache
-
-## 🛠️ Tecnologias
+## 🛠️ Stack Tecnológica
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Frontend | Next.js 14 (App Router) |
-| Linguagem | TypeScript |
+| Frontend | Next.js 14 (App Router) + TypeScript |
 | Estilização | Tailwind CSS |
-| i18n | next-intl |
+| Backend | Next.js API Routes |
+| Banco de Dados | PostgreSQL + Prisma ORM |
+| Autenticação | NextAuth.js (JWT) |
+| Pagamentos Mobile | PaySuite (M-Pesa + e-Mola) |
+| Pagamentos Cartão | Stripe (Visa + Mastercard) |
+| i18n | next-intl (PT/EN) |
 | PWA | Service Worker + Manifest |
-| Icons | SVG inline (Heroicons style) |
+| Deploy | Vercel / Railway / Docker |
 
-## 🚀 Como Executar
+## 📋 Funcionalidades Completas
 
-```bash
-# Instalar dependências
-npm install
+### Frontend
+- ✅ Landing Page com hero, features, pricing
+- ✅ Login & Cadastro de Empresa
+- ✅ Dashboard com estatísticas em tempo real
+- ✅ Gestão de Produtos (CRUD completo)
+- ✅ Gestão de Categorias
+- ✅ Gestão de Reservas (confirmar/cancelar/concluir)
+- ✅ Gestão de Clientes + Programa de Fidelidade
+- ✅ Cardápio Digital Público
+- ✅ Reserva de Mesa (3 passos + pagamento)
+- ✅ Painel Master (empresas, assinaturas, cobranças)
+- ✅ PWA (funciona como app)
+- ✅ Bilíngue (Português/Inglês)
 
-# Rodar em desenvolvimento
-npm run dev
+### Backend
+- ✅ 25+ API Routes com autenticação
+- ✅ PostgreSQL com Prisma ORM (12 modelos)
+- ✅ NextAuth.js com JWT e roles (MASTER/OWNER/CUSTOMER)
+- ✅ Middleware de proteção de rotas
+- ✅ Integração Stripe completa (PaymentIntent + Webhooks)
+- ✅ Integração PaySuite completa (STK Push + Webhooks)
+- ✅ Seed data para desenvolvimento
+- ✅ Pronto para deploy
 
-# Build de produção
-npm run build
-npm start
-```
+### Pagamentos
+- ✅ M-Pesa (via PaySuite)
+- ✅ e-Mola (via PaySuite)
+- ✅ Visa (via Stripe)
+- ✅ Mastercard (via Stripe)
+- ✅ Webhooks para confirmação automática
+- ✅ Status tracking de pagamentos
 
-## 📁 Estrutura do Projeto
+### Programa de Fidelidade
+- 🥉 Bronze (0+ pontos)
+- 🥈 Prata (200+ pontos)
+- 🥇 Ouro (500+ pontos)
+- 💎 Diamante (1000+ pontos)
+- 100 MZN gasto = 1 ponto
+- 100 pontos = 100 MZN de desconto
 
-```
-src/
-├── app/
-│   └── [locale]/
-│       ├── page.tsx              # Landing Page
-│       ├── (auth)/
-│       │   ├── login/            # Login
-│       │   └── register/         # Cadastro
-│       ├── (dashboard)/
-│       │   ├── dashboard/        # Dashboard
-│       │   ├── products/         # Produtos
-│       │   ├── categories/       # Categorias
-│       │   ├── reservations/     # Reservas
-│       │   └── customers/        # Clientes
-│       ├── (public)/
-│       │   ├── menu/[slug]/      # Cardápio público
-│       │   └── reserve/[slug]/   # Reserva de mesa
-│       └── (master)/
-│           └── master/           # Painel Master
-│               ├── companies/
-│               ├── subscriptions/
-│               └── billing/
-├── components/
-│   ├── ui/                       # Componentes reutilizáveis
-│   ├── layout/                   # Sidebar, Header, Navbar
-│   └── landing/                  # Componentes da Landing
-├── i18n/                         # Configuração i18n
-├── lib/                          # Utilitários
-└── types/                        # Tipos TypeScript
-messages/
-├── pt.json                       # Traduções Português
-└── en.json                       # Traduções Inglês
-public/
-├── manifest.json                 # PWA Manifest
-├── sw.js                         # Service Worker
-├── offline.html                  # Página offline
-└── icons/                        # Ícones PWA
-```
-
-## 💳 Integrações de Pagamento (Planejadas)
-
-- **M-Pesa** - API Vodacom Moçambique
-- **e-Mola** - API Movitel
-- **Visa/Mastercard** - Gateway de pagamento
-
-## 📊 Planos de Assinatura
+## 💳 Planos de Assinatura
 
 | Plano | Preço | Recursos |
 |-------|-------|----------|
-| Básico | 499 MZN/mês | Cardápio digital, 50 produtos, Reservas, Email |
-| Profissional | 999 MZN/mês | + Ilimitado, Fidelidade, Pagamentos, Prioritário |
-| Premium | 1.999 MZN/mês | + Multi-filiais, API, Relatórios, Gerente dedicado |
+| Básico | 499 MZN/mês | Cardápio, 50 produtos, Reservas |
+| Profissional | 999 MZN/mês | + Ilimitado, Fidelidade, Pagamentos |
+| Premium | 1.999 MZN/mês | + Multi-filiais, API, Relatórios |
 
-## 🎯 Próximos Passos (V2)
+**Primeiro mês grátis para todas as empresas!**
 
-- [ ] Backend com NestJS ou Laravel
-- [ ] PostgreSQL database
-- [ ] Integração real M-Pesa / e-Mola
-- [ ] Notificações push
-- [ ] Dashboard analytics avançado
-- [ ] App publicado na Play Store / App Store
-- [ ] Suporte a mais tipos de negócio (Hotéis, Food Trucks)
-- [ ] QR Code para cardápio
+## 📖 Documentação
+
+- 📘 [Guia de Deploy](./DEPLOY.md) - Setup local, produção, pagamentos
+- 📗 [Variáveis de Ambiente](./.env.example) - Todas as configurações
 
 ## 📄 Licença
 
