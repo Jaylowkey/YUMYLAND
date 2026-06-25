@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Connect billing page to real API, improve all dashboard pages with toast feedback on CRUD operations, add confirmation dialogs for destructive actions, add empty state improvements, and polish the master panel pages.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Refactor src/app/[locale]/(master)/master/billing/page.tsx: Replace hardcoded mock billingHistory and summary with real API calls to /api/master/billing (or /api/master/payments). Add loading states, error handling, and pagination. Use the same pattern as other master pages (apiGet from @/lib/api).",
     "2. Create src/app/api/master/billing/route.ts: API route that fetches real payment records from the database using Prisma. Query the Payment model with company relations, return paginated results and summary stats (total received, pending, failed).",
@@ -24,5 +24,5 @@
     "Review that new API route follows existing patterns (auth check, Prisma queries, proper error responses)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All TypeScript errors are pre-existing (missing node_modules types - same as FEAT-002). Billing API route created at /api/master/billing with Prisma Payment queries and aggregation. Billing page refactored to use real API with loading/error/pagination states. Products, categories, reservations pages all updated with useToast and window.confirm for destructive actions. Customers page now has pagination and a visual loyalty progress bar showing percentage toward next level."
 }
