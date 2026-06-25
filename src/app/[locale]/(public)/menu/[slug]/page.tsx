@@ -37,8 +37,12 @@ interface MenuData {
     hours?: string;
     slug: string;
   };
-  categories: MenuCategory[];
-  products: MenuItem[];
+  categories: {
+    id: string;
+    name: string;
+    description?: string;
+    products: MenuItem[];
+  }[];
 }
 
 export default function MenuPage() {
@@ -117,7 +121,17 @@ export default function MenuPage() {
     );
   }
 
-  const { company, categories: menuCategories, products: menuItems } = menuData;
+  const { company, categories: apiCategories } = menuData;
+
+  // Flatten products from categories
+  const menuItems: MenuItem[] = apiCategories.flatMap((cat) =>
+    (cat.products || []).map((p) => ({ ...p, category: cat.name, categoryId: cat.id }))
+  );
+
+  const menuCategories: MenuCategory[] = apiCategories.map((c) => ({
+    id: c.id,
+    name: c.name,
+  }));
 
   const allCategories = [
     { id: "all", name: "Todos", icon: "\uD83C\uDF7D\uFE0F" },
