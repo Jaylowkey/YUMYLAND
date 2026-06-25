@@ -20,8 +20,8 @@ export default function MasterSubscriptionsPage() {
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
-      const data = await apiGet<Subscription[]>("/api/master/subscriptions");
-      setSubscriptions(data);
+      const data = await apiGet<any>("/api/master/subscriptions");
+      setSubscriptions(data.subscriptions || data || []);
       setError("");
     } catch (err: any) {
       setError(err.message || "Failed to load subscriptions");

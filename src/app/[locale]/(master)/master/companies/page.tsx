@@ -23,8 +23,8 @@ export default function MasterCompaniesPage() {
   const fetchCompanies = async () => {
     try {
       setLoading(true);
-      const data = await apiGet<Company[]>("/api/master/companies");
-      setCompanies(data);
+      const data = await apiGet<any>("/api/master/companies");
+      setCompanies(data.companies || data || []);
       setError("");
     } catch (err: any) {
       setError(err.message || "Failed to load companies");
