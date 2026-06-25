@@ -71,6 +71,13 @@ export default function MenuPage() {
     fetchMenu();
   }, [slug]);
 
+  // Dynamic SEO title
+  useEffect(() => {
+    if (menuData?.company?.name) {
+      document.title = `${menuData.company.name} - Cardapio Digital | YumyLand`;
+    }
+  }, [menuData]);
+
   if (loading) {
     return (
       <div className="min-h-screen">

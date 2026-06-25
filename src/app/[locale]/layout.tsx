@@ -17,9 +17,27 @@ export function generateStaticParams() {
 export const metadata = {
   title: "YumyLand - Gestão inteligente para o seu negócio",
   description:
-    "Plataforma SaaS completa para gestão de lanchonetes, restaurantes, cafés e pastelarias.",
+    "Plataforma SaaS completa para gestão de lanchonetes, restaurantes, cafés e pastelarias em Moçambique. Cardapio digital, reservas online, fidelidade de clientes e muito mais.",
   manifest: "/manifest.json",
   themeColor: "#f97316",
+  keywords: ["restaurante", "gestao", "cardapio digital", "reservas", "mozambique", "SaaS", "YumyLand"],
+  authors: [{ name: "YumyLand" }],
+  openGraph: {
+    title: "YumyLand - Gestão inteligente para o seu negócio",
+    description: "Plataforma SaaS completa para gestão de lanchonetes, restaurantes, cafés e pastelarias em Moçambique.",
+    siteName: "YumyLand",
+    type: "website",
+    locale: "pt_MZ",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "YumyLand - Gestão inteligente para o seu negócio",
+    description: "Plataforma SaaS completa para gestão de lanchonetes, restaurantes, cafés e pastelarias em Moçambique.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function LocaleLayout({

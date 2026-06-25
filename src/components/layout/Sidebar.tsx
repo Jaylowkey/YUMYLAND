@@ -110,6 +110,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 md:hidden"
+            aria-label="Fechar menu lateral"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -118,7 +119,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="mt-6 px-3 space-y-1">
+        <nav className="mt-6 px-3 space-y-1" aria-label="Dashboard navigation">
           {navItems.map((item) => {
             const fullHref = `/${locale}${item.href}`;
             const isActive = pathname === fullHref || pathname.startsWith(fullHref + "/");
@@ -134,6 +135,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     ? "bg-primary-50 text-primary-600"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 )}
+                aria-label={t(item.key)}
+                aria-current={isActive ? "page" : undefined}
               >
                 <span className={cn(isActive ? "text-primary-500" : "text-gray-400")}>
                   {item.icon}

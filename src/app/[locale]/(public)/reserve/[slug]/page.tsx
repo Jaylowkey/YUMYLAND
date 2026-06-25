@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import Button from "@/components/ui/Button";
@@ -28,6 +28,12 @@ export default function ReservePage() {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Dynamic SEO title
+  useEffect(() => {
+    const companyName = slug.replace(/-/g, " ");
+    document.title = `Reservar Mesa - ${companyName} | YumyLand`;
+  }, [slug]);
   const [form, setForm] = useState({
     date: "",
     time: "",
