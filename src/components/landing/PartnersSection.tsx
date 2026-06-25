@@ -38,7 +38,6 @@ export default function PartnersSection() {
   const locale = pathname?.startsWith("/en") ? "en" : "pt";
   const [premium, setPremium] = useState<Company[]>([]);
   const [partners, setPartners] = useState<Company[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCompanies() {
@@ -49,16 +48,13 @@ export default function PartnersSection() {
           setPremium(data.premium || []);
           setPartners(data.partners || []);
         }
-      } catch (err) {
-        // Silently fail - landing page still works without dynamic data
-      } finally {
-        setLoading(false);
+      } catch {
+        // Silently fail
       }
     }
     fetchCompanies();
   }, []);
 
-  // Fallback premium companies if DB is empty or API fails
   const displayPremium = premium.length > 0 ? premium : [
     { id: "1", name: "Restaurante Tropical", type: "restaurant", slug: "restaurante-tropical", logo: null },
     { id: "2", name: "Pizza Beira", type: "pizzeria", slug: "pizza-beira", logo: null },
@@ -72,6 +68,8 @@ export default function PartnersSection() {
     { id: "4", name: "Lanchonete Express", type: "snackbar", slug: "lanchonete-express", logo: null, plan: "professional" },
     { id: "5", name: "Pastelaria Rosa", type: "bakery", slug: "pastelaria-rosa", logo: null, plan: "basic" },
     { id: "6", name: "Bar do Oceano", type: "bar", slug: "bar-oceano", logo: null, plan: "professional" },
+    { id: "7", name: "Churrasqueira Sol", type: "restaurant", slug: "churrasqueira-sol", logo: null, plan: "professional" },
+    { id: "8", name: "Gelataria Fria", type: "cafe", slug: "gelataria-fria", logo: null, plan: "basic" },
   ];
 
   return (
@@ -94,22 +92,19 @@ export default function PartnersSection() {
         </div>
 
         {/* Premium Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
           {displayPremium.map((company) => (
             <Link
               key={company.id}
               href={`/${locale}/menu/${company.slug}`}
               className="group relative rounded-2xl border-2 border-purple-100 bg-gradient-to-br from-white to-purple-50/30 p-6 transition-all hover:border-purple-300 hover:shadow-xl hover:shadow-purple-100/50 hover:-translate-y-1"
             >
-              {/* Premium badge */}
               <div className="absolute -top-3 right-4">
                 <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-primary-500 px-3 py-1 text-[10px] font-bold text-white uppercase tracking-wider shadow-lg">
                   💎 Premium
                 </span>
               </div>
-
               <div className="flex items-center gap-4">
-                {/* Logo/Icon */}
                 <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-primary-100 flex items-center justify-center text-3xl shadow-inner">
                   {typeIcons[company.type] || "🍽️"}
                 </div>
@@ -117,14 +112,9 @@ export default function PartnersSection() {
                   <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-purple-700 transition-colors">
                     {company.name}
                   </h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-1">
-                    <span className="text-base">{typeIcons[company.type]}</span>
-                    {typeLabels[company.type] || company.type}
-                  </p>
+                  <p className="text-sm text-gray-500">{typeLabels[company.type] || company.type}</p>
                 </div>
               </div>
-
-              {/* Benefit callout */}
               <div className="mt-4 rounded-lg bg-purple-50 p-3 border border-purple-100">
                 <p className="text-xs text-purple-700 font-medium flex items-center gap-1.5">
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -133,8 +123,6 @@ export default function PartnersSection() {
                   {locale === "pt" ? "Visibilidade extra na plataforma" : "Extra visibility on platform"}
                 </p>
               </div>
-
-              {/* View menu link */}
               <div className="mt-4 text-sm font-semibold text-purple-600 group-hover:text-purple-700 flex items-center gap-1">
                 {locale === "pt" ? "Ver Cardápio" : "View Menu"} →
               </div>
@@ -142,38 +130,39 @@ export default function PartnersSection() {
           ))}
         </div>
 
-        {/* Partners Carousel */}
-        <div className="text-center mb-8">
-          <h3 className="text-xl font-bold text-gray-900">
-            {locale === "pt" ? "Empresas Parceiras" : "Partner Businesses"}
-          </h3>
-          <p className="text-sm text-gray-500 mt-1">
-            {locale === "pt"
-              ? "Junte-se a dezenas de empresas que já confiam na YumyLand"
-              : "Join dozens of businesses that already trust YumyLand"}
+        {/* Partners Logos Carousel - ONLY LOGOS */}
+        <div className="text-center mb-10">
+          <p className="text-sm font-medium text-gray-400 uppercase tracking-widest">
+            {locale === "pt" ? "Empresas que confiam na YumyLand" : "Businesses that trust YumyLand"}
           </p>
         </div>
 
-        {/* Infinite scroll carousel */}
         <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white to-transparent z-10" />
 
-          <div className="flex animate-scroll gap-6 overflow-hidden">
-            {[...displayPartners, ...displayPartners].map((company, idx) => (
+          <div className="flex animate-scroll gap-12 items-center">
+            {[...displayPartners, ...displayPartners, ...displayPartners].map((company, idx) => (
               <div
                 key={`${company.id}-${idx}`}
-                className="shrink-0 flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3 shadow-sm hover:shadow-md transition-shadow"
+                className="shrink-0 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
               >
-                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-xl">
-                  {typeIcons[company.type] || "🍽️"}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">{company.name}</p>
-                  <p className="text-[11px] text-gray-400">{typeLabels[company.type] || company.type}</p>
-                </div>
-                {company.plan === "premium" && (
-                  <span className="text-xs">💎</span>
+                {company.logo ? (
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                  />
+                ) : (
+                  /* Text-based logo when no image */
+                  <div className="flex items-center gap-2">
+                    <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-lg font-bold text-gray-600">
+                      {company.name.charAt(0)}
+                    </div>
+                    <span className="text-sm font-bold text-gray-500 whitespace-nowrap">
+                      {company.name}
+                    </span>
+                  </div>
                 )}
               </div>
             ))}
@@ -181,14 +170,13 @@ export default function PartnersSection() {
         </div>
       </div>
 
-      {/* Carousel animation CSS */}
       <style jsx>{`
         @keyframes scroll {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-33.33%); }
         }
         .animate-scroll {
-          animation: scroll 30s linear infinite;
+          animation: scroll 25s linear infinite;
         }
         .animate-scroll:hover {
           animation-play-state: paused;
