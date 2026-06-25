@@ -5,12 +5,14 @@ import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/ToastProvider";
 import { Category } from "@/types";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api";
 
 export default function CategoriesPage() {
   const t = useTranslations("categories");
   const tc = useTranslations("common");
+  const { showToast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -56,27 +58,33 @@ export default function CategoriesPage() {
           name: form.name,
           description: form.description,
         });
+        showToast("Categoria atualizada", "success");
       } else {
         await apiPost("/api/categories", {
           name: form.name,
           description: form.description,
         });
+        showToast("Categoria criada com sucesso", "success");
       }
       setShowModal(false);
       await fetchCategories();
     } catch (err: any) {
-      setError(err.message || "Failed to save category");
+      showToast(err.message || "Erro ao salvar categoria", "error");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja remover esta categoria?")) {
+      return;
+    }
     try {
       await apiDelete(`/api/categories/${id}`);
+      showToast("Categoria removida", "success");
       await fetchCategories();
     } catch (err: any) {
-      setError(err.message || "Failed to delete category");
+      showToast(err.message || "Erro ao remover categoria", "error");
     }
   };
 
@@ -126,13 +134,14 @@ export default function CategoriesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
           </svg>
           <p className="mt-4 text-sm text-gray-500">{t("noCategories")}</p>
+          <p className="mt-1 text-xs text-gray-400">Comece adicionando sua primeira categoria</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {categories.map((category) => (
             <div
               key={category.id}
-              className="card hover:shadow-md transition-shadow group"
+              className="card hover:shadow-md transition-all duration-200 group"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">

@@ -7,6 +7,7 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
+import { useToast } from "@/components/ui/ToastProvider";
 import { formatCurrency } from "@/lib/utils";
 import { Product, Category } from "@/types";
 import { apiGet, apiPost, apiPut, apiDelete, apiPatch } from "@/lib/api";
@@ -14,6 +15,7 @@ import { apiGet, apiPost, apiPut, apiDelete, apiPatch } from "@/lib/api";
 export default function ProductsPage() {
   const t = useTranslations("products");
   const tc = useTranslations("common");
+  const { showToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,24 +110,30 @@ export default function ProductsPage() {
       };
       if (editingProduct) {
         await apiPut(`/api/products/${editingProduct.id}`, body);
+        showToast("Produto atualizado", "success");
       } else {
         await apiPost("/api/products", body);
+        showToast("Produto criado com sucesso", "success");
       }
       setShowModal(false);
       await fetchProducts();
     } catch (err: any) {
-      setError(err.message || "Failed to save product");
+      showToast(err.message || "Erro ao salvar produto", "error");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja remover este produto?")) {
+      return;
+    }
     try {
       await apiDelete(`/api/products/${id}`);
+      showToast("Produto removido", "success");
       await fetchProducts();
     } catch (err: any) {
-      setError(err.message || "Failed to delete product");
+      showToast(err.message || "Erro ao remover produto", "error");
     }
   };
 
@@ -134,9 +142,13 @@ export default function ProductsPage() {
     if (!product) return;
     try {
       await apiPatch(`/api/products/${id}`, { available: !product.available });
+      showToast(
+        product.available ? "Produto desativado" : "Produto ativado",
+        "success"
+      );
       await fetchProducts();
     } catch (err: any) {
-      setError(err.message || "Failed to update product");
+      showToast(err.message || "Erro ao atualizar produto", "error");
     }
   };
 
@@ -202,6 +214,7 @@ export default function ProductsPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
           <p className="mt-4 text-sm text-gray-500">{t("noProducts")}</p>
+          <p className="mt-1 text-xs text-gray-400">Comece adicionando seu primeiro produto</p>
         </div>
       ) : (
         <div className="card overflow-hidden p-0">

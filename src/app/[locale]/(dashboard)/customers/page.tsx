@@ -14,6 +14,23 @@ const levelIcons: Record<string, string> = {
   diamond: "\uD83D\uDC8E",
 };
 
+const levelThresholds: Record<string, { next: string | null; pointsNeeded: number }> = {
+  bronze: { next: "silver", pointsNeeded: 200 },
+  silver: { next: "gold", pointsNeeded: 500 },
+  gold: { next: "diamond", pointsNeeded: 1000 },
+  diamond: { next: null, pointsNeeded: 0 },
+};
+
+function getLoyaltyProgress(level: string, points: number) {
+  const threshold = levelThresholds[level];
+  if (!threshold || !threshold.next) {
+    return { percentage: 100, remaining: 0, nextLevel: null };
+  }
+  const percentage = Math.min(100, Math.round((points / threshold.pointsNeeded) * 100));
+  const remaining = Math.max(0, threshold.pointsNeeded - points);
+  return { percentage, remaining, nextLevel: threshold.next };
+}
+
 export default function CustomersPage() {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
@@ -22,6 +39,9 @@ export default function CustomersPage() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
 
   const fetchCustomers = async () => {
     try {
@@ -29,12 +49,16 @@ export default function CustomersPage() {
       const params = new URLSearchParams();
       if (searchTerm) params.set("search", searchTerm);
       if (levelFilter !== "all") params.set("level", levelFilter);
+      params.set("page", page.toString());
+      params.set("limit", limit.toString());
       const url = `/api/customers${params.toString() ? `?${params.toString()}` : ""}`;
       const data = await apiGet<{ customers: Customer[]; total: number } | Customer[]>(url);
       if (Array.isArray(data)) {
         setCustomers(data);
+        setTotal(data.length);
       } else {
         setCustomers(data.customers || []);
+        setTotal(data.total || 0);
       }
       setError("");
     } catch (err: any) {
@@ -46,16 +70,17 @@ export default function CustomersPage() {
 
   useEffect(() => {
     fetchCustomers();
-  }, [levelFilter]);
+  }, [levelFilter, page]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      setPage(1);
       fetchCustomers();
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const filteredCustomers = customers;
+  const totalPages = Math.ceil(total / limit);
 
   const levelFilters = [
     { value: "all", label: tc("all") },
@@ -89,7 +114,7 @@ export default function CustomersPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-        <p className="text-sm text-gray-500">{customers.length} clientes cadastrados</p>
+        <p className="text-sm text-gray-500">{total} clientes cadastrados</p>
       </div>
 
       {/* Error */}
@@ -135,7 +160,7 @@ export default function CustomersPage() {
           {levelFilters.map((f) => (
             <button
               key={f.value}
-              onClick={() => setLevelFilter(f.value)}
+              onClick={() => { setLevelFilter(f.value); setPage(1); }}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 levelFilter === f.value
                   ? "bg-primary-500 text-white"
@@ -149,7 +174,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Customers Table */}
-      {filteredCustomers.length === 0 ? (
+      {customers.length === 0 ? (
         <div className="card text-center py-12">
           <p className="text-sm text-gray-500">{t("noCustomers")}</p>
         </div>
@@ -162,51 +187,100 @@ export default function CustomersPage() {
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("name")}</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("level")}</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("points")}</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-500">Progresso</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("totalSpent")}</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">{t("digitalCard")}</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("joinDate")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filteredCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                          <span className="text-xs font-bold text-white">
-                            {customer.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                          </span>
+                {customers.map((customer) => {
+                  const progress = getLoyaltyProgress(customer.level, customer.points);
+                  return (
+                    <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                            <span className="text-xs font-bold text-white">
+                              {customer.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{customer.name}</p>
+                            <p className="text-xs text-gray-500">{customer.phone}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{customer.name}</p>
-                          <p className="text-xs text-gray-500">{customer.phone}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${getLoyaltyColor(customer.level)}`}>
+                          {levelIcons[customer.level]} {t(`levels.${customer.level}`)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="font-semibold text-gray-900">{customer.points}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="w-32">
+                          {progress.nextLevel ? (
+                            <div>
+                              <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                                <span>{progress.percentage}%</span>
+                                <span>{levelIcons[progress.nextLevel]} {t(`levels.${progress.nextLevel}`)}</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600 transition-all duration-300"
+                                  style={{ width: `${progress.percentage}%` }}
+                                />
+                              </div>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                Faltam {progress.remaining} pts
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <span className="text-yellow-500">\u2605</span>
+                              Nivel maximo
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${getLoyaltyColor(customer.level)}`}>
-                        {levelIcons[customer.level]} {t(`levels.${customer.level}`)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="font-semibold text-gray-900">{customer.points}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-gray-600">{formatCurrency(customer.totalSpent)}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <code className="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono text-gray-600">
-                        {customer.digitalCardId}
-                      </code>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-gray-500">{customer.joinDate}</span>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-gray-600">{formatCurrency(customer.totalSpent)}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-gray-500">{customer.joinDate}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                Pagina {page} de {totalPages} ({total} clientes)
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Anterior
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Proximo
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -4,12 +4,14 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
+import { useToast } from "@/components/ui/ToastProvider";
 import { Reservation } from "@/types";
 import { apiGet, apiPatch } from "@/lib/api";
 
 export default function ReservationsPage() {
   const t = useTranslations("reservations");
   const tc = useTranslations("common");
+  const { showToast } = useToast();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,11 +38,30 @@ export default function ReservationsPage() {
   }, [filter]);
 
   const updateStatus = async (id: string, status: Reservation["status"]) => {
+    const actionLabels: Record<string, string> = {
+      confirmed: "confirmar",
+      cancelled: "cancelar",
+      completed: "completar",
+    };
+    const actionLabel = actionLabels[status] || "atualizar";
+
+    if (status === "cancelled" || status === "completed") {
+      if (!window.confirm(`Tem certeza que deseja ${actionLabel} esta reserva?`)) {
+        return;
+      }
+    }
+
     try {
       await apiPatch(`/api/reservations/${id}`, { status });
+      const successLabels: Record<string, string> = {
+        confirmed: "Reserva confirmada",
+        cancelled: "Reserva cancelada",
+        completed: "Reserva concluida",
+      };
+      showToast(successLabels[status] || "Status atualizado", "success");
       await fetchReservations(filter);
     } catch (err: any) {
-      setError(err.message || "Failed to update reservation");
+      showToast(err.message || "Erro ao atualizar reserva", "error");
     }
   };
 
@@ -52,6 +73,11 @@ export default function ReservationsPage() {
       completed: "info",
     };
     return <Badge variant={variants[status]}>{t(`statuses.${status}`)}</Badge>;
+  };
+
+  const isToday = (dateStr: string) => {
+    const today = new Date().toISOString().split("T")[0];
+    return dateStr === today;
   };
 
   const statusFilters = [
@@ -119,12 +145,25 @@ export default function ReservationsPage() {
       ) : (
         <div className="space-y-3">
           {reservations.map((reservation) => (
-            <div key={reservation.id} className="card hover:shadow-md transition-shadow">
+            <div
+              key={reservation.id}
+              className={`card hover:shadow-md transition-shadow ${
+                isToday(reservation.date)
+                  ? "ring-2 ring-primary-200 border-primary-100"
+                  : ""
+              }`}
+            >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 {/* Left: Info */}
                 <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                    <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${
+                    isToday(reservation.date)
+                      ? "bg-primary-50"
+                      : "bg-blue-50"
+                  }`}>
+                    <svg className={`h-6 w-6 ${
+                      isToday(reservation.date) ? "text-primary-500" : "text-blue-500"
+                    }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
@@ -134,6 +173,11 @@ export default function ReservationsPage() {
                       {getStatusBadge(reservation.status)}
                       {reservation.prepaid && (
                         <Badge variant="info">Pago</Badge>
+                      )}
+                      {isToday(reservation.date) && (
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-700">
+                          Hoje
+                        </span>
                       )}
                     </div>
                     <p className="text-sm text-gray-500 mt-1">{reservation.customerPhone}</p>
