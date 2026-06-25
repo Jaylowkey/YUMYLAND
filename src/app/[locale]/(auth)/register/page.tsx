@@ -3,11 +3,48 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { signIn } from "next-auth/react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
+
+type PasswordStrength = "weak" | "medium" | "strong";
+
+function getPasswordStrength(password: string): PasswordStrength {
+  if (password.length === 0) return "weak";
+  let score = 0;
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score >= 4) return "strong";
+  if (score >= 2) return "medium";
+  return "weak";
+}
+
+const strengthColors: Record<PasswordStrength, string> = {
+  weak: "bg-red-500",
+  medium: "bg-yellow-500",
+  strong: "bg-green-500",
+};
+
+const strengthWidths: Record<PasswordStrength, string> = {
+  weak: "w-1/3",
+  medium: "w-2/3",
+  strong: "w-full",
+};
+
+interface FieldErrors {
+  companyName?: string;
+  ownerName?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  confirmPassword?: string;
+}
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register");
@@ -17,6 +54,7 @@ export default function RegisterPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState({
     companyName: "",
     ownerName: "",
@@ -39,27 +77,94 @@ export default function RegisterPage() {
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    // Clear field error on change
+    if (fieldErrors[field as keyof FieldErrors]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
   };
+
+  const validateField = useCallback(
+    (field: string, value: string) => {
+      let error = "";
+      switch (field) {
+        case "companyName":
+          if (!value.trim()) {
+            error = locale === "pt" ? "Nome da empresa obrigatorio" : "Company name is required";
+          }
+          break;
+        case "ownerName":
+          if (!value.trim()) {
+            error = locale === "pt" ? "Nome do proprietario obrigatorio" : "Owner name is required";
+          }
+          break;
+        case "email":
+          if (!value.trim()) {
+            error = locale === "pt" ? "Email obrigatorio" : "Email is required";
+          } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            error = locale === "pt" ? "Email invalido" : "Invalid email address";
+          }
+          break;
+        case "phone":
+          if (!value.trim()) {
+            error = locale === "pt" ? "Telefone obrigatorio" : "Phone is required";
+          }
+          break;
+        case "password":
+          if (value.length > 0 && value.length < 6) {
+            error =
+              locale === "pt"
+                ? "Minimo 6 caracteres"
+                : "Minimum 6 characters";
+          }
+          break;
+        case "confirmPassword":
+          if (value && value !== form.password) {
+            error =
+              locale === "pt"
+                ? "As senhas nao coincidem"
+                : "Passwords do not match";
+          }
+          break;
+      }
+      setFieldErrors((prev) => ({ ...prev, [field]: error || undefined }));
+    },
+    [locale, form.password]
+  );
+
+  const handleBlur = (field: string) => {
+    validateField(field, form[field as keyof typeof form]);
+  };
+
+  const passwordStrength = getPasswordStrength(form.password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Validate passwords match
+    // Validate all fields
+    const errors: FieldErrors = {};
+    if (!form.companyName.trim()) {
+      errors.companyName = locale === "pt" ? "Nome da empresa obrigatorio" : "Company name is required";
+    }
+    if (!form.ownerName.trim()) {
+      errors.ownerName = locale === "pt" ? "Nome do proprietario obrigatorio" : "Owner name is required";
+    }
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errors.email = locale === "pt" ? "Email invalido" : "Invalid email address";
+    }
+    if (!form.phone.trim()) {
+      errors.phone = locale === "pt" ? "Telefone obrigatorio" : "Phone is required";
+    }
+    if (form.password.length < 6) {
+      errors.password = locale === "pt" ? "Minimo 6 caracteres" : "Minimum 6 characters";
+    }
     if (form.password !== form.confirmPassword) {
-      setError(locale === "pt" ? "As senhas nao coincidem" : "Passwords do not match");
-      setLoading(false);
-      return;
+      errors.confirmPassword = locale === "pt" ? "As senhas nao coincidem" : "Passwords do not match";
     }
 
-    // Validate password length
-    if (form.password.length < 6) {
-      setError(
-        locale === "pt"
-          ? "A senha deve ter pelo menos 6 caracteres"
-          : "Password must be at least 6 characters"
-      );
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       setLoading(false);
       return;
     }
@@ -132,7 +237,7 @@ export default function RegisterPage() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 animate-fadeIn">
           {error}
         </div>
       )}
@@ -144,6 +249,8 @@ export default function RegisterPage() {
           placeholder="Ex: Lanchonete do Joao"
           value={form.companyName}
           onChange={(e) => handleChange("companyName", e.target.value)}
+          onBlur={() => handleBlur("companyName")}
+          error={fieldErrors.companyName}
           required
         />
 
@@ -153,6 +260,8 @@ export default function RegisterPage() {
           placeholder="Joao Silva"
           value={form.ownerName}
           onChange={(e) => handleChange("ownerName", e.target.value)}
+          onBlur={() => handleBlur("ownerName")}
+          error={fieldErrors.ownerName}
           required
         />
 
@@ -164,6 +273,8 @@ export default function RegisterPage() {
             placeholder="email@exemplo.com"
             value={form.email}
             onChange={(e) => handleChange("email", e.target.value)}
+            onBlur={() => handleBlur("email")}
+            error={fieldErrors.email}
             required
           />
           <Input
@@ -173,6 +284,8 @@ export default function RegisterPage() {
             placeholder="+258 84 000 0000"
             value={form.phone}
             onChange={(e) => handleChange("phone", e.target.value)}
+            onBlur={() => handleBlur("phone")}
+            error={fieldErrors.phone}
             required
           />
         </div>
@@ -186,15 +299,51 @@ export default function RegisterPage() {
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
-            id="password"
-            type="password"
-            label={t("password")}
-            placeholder="••••••••"
-            value={form.password}
-            onChange={(e) => handleChange("password", e.target.value)}
-            required
-          />
+          <div>
+            <Input
+              id="password"
+              type="password"
+              label={t("password")}
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+              onBlur={() => handleBlur("password")}
+              error={fieldErrors.password}
+              required
+            />
+            {form.password.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 flex-1 rounded-full bg-gray-200 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${strengthColors[passwordStrength]} ${strengthWidths[passwordStrength]}`}
+                    />
+                  </div>
+                  <span
+                    className={`text-xs font-medium ${
+                      passwordStrength === "weak"
+                        ? "text-red-600"
+                        : passwordStrength === "medium"
+                        ? "text-yellow-600"
+                        : "text-green-600"
+                    }`}
+                  >
+                    {passwordStrength === "weak"
+                      ? locale === "pt"
+                        ? "Fraca"
+                        : "Weak"
+                      : passwordStrength === "medium"
+                      ? locale === "pt"
+                        ? "Media"
+                        : "Medium"
+                      : locale === "pt"
+                      ? "Forte"
+                      : "Strong"}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
           <Input
             id="confirmPassword"
             type="password"
@@ -202,6 +351,8 @@ export default function RegisterPage() {
             placeholder="••••••••"
             value={form.confirmPassword}
             onChange={(e) => handleChange("confirmPassword", e.target.value)}
+            onBlur={() => handleBlur("confirmPassword")}
+            error={fieldErrors.confirmPassword}
             required
           />
         </div>

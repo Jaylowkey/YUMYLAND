@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { locales } from "@/i18n/config";
 import PWARegister from "@/components/PWARegister";
 import SessionProvider from "@/components/SessionProvider";
+import ToastProvider from "@/components/ui/ToastProvider";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -44,7 +45,9 @@ export default async function LocaleLayout({
       <body className={inter.className}>
         <SessionProvider>
           <NextIntlClientProvider messages={messages}>
-            {children}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </NextIntlClientProvider>
         </SessionProvider>
         <PWARegister />
