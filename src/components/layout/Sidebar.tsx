@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -53,61 +54,118 @@ const navItems = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations("dashboard.nav");
+  const tc = useTranslations("common");
   const pathname = usePathname();
   const locale = pathname.startsWith("/en") ? "en" : "pt";
+  const { data: session } = useSession();
+
+  const userName = session?.user?.name || "User";
+  const userInitials = userName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: `/${locale}/login` });
+  };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white">
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600">
-          <span className="text-sm font-bold text-white">Y</span>
-        </div>
-        <span className="text-lg font-bold text-gray-900">
-          Yumy<span className="text-primary-500">Land</span>
-        </span>
-      </div>
+    <>
+      {/* Backdrop overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity md:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      {/* Navigation */}
-      <nav className="mt-6 px-3 space-y-1">
-        {navItems.map((item) => {
-          const fullHref = `/${locale}${item.href}`;
-          const isActive = pathname === fullHref || pathname.startsWith(fullHref + "/");
-
-          return (
-            <Link
-              key={item.key}
-              href={fullHref}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary-50 text-primary-600"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              )}
-            >
-              <span className={cn(isActive ? "text-primary-500" : "text-gray-400")}>
-                {item.icon}
-              </span>
-              {t(item.key)}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Bottom section */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 p-4">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-            <span className="text-xs font-bold text-white">LJ</span>
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-50 h-screen w-64 border-r border-gray-200 bg-white transition-transform duration-300 ease-in-out",
+          "md:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Logo */}
+        <div className="flex h-16 items-center justify-between border-b border-gray-100 px-6">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600">
+              <span className="text-sm font-bold text-white">Y</span>
+            </div>
+            <span className="text-lg font-bold text-gray-900">
+              Yumy<span className="text-primary-500">Land</span>
+            </span>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">Lanchonete do João</p>
-            <p className="text-xs text-gray-500 truncate">Plano Profissional</p>
-          </div>
+          {/* Close button for mobile */}
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 md:hidden"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      </div>
-    </aside>
+
+        {/* Navigation */}
+        <nav className="mt-6 px-3 space-y-1">
+          {navItems.map((item) => {
+            const fullHref = `/${locale}${item.href}`;
+            const isActive = pathname === fullHref || pathname.startsWith(fullHref + "/");
+
+            return (
+              <Link
+                key={item.key}
+                href={fullHref}
+                onClick={onClose}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary-50 text-primary-600"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                )}
+              >
+                <span className={cn(isActive ? "text-primary-500" : "text-gray-400")}>
+                  {item.icon}
+                </span>
+                {t(item.key)}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom section - User info and logout */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-white">{userInitials}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
+              <p className="text-xs text-gray-500 truncate">{session?.user?.email || ""}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="mt-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            {tc("logout")}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

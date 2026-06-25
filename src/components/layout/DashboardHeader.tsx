@@ -3,16 +3,21 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 
-export default function DashboardHeader() {
+interface DashboardHeaderProps {
+  onToggleSidebar: () => void;
+}
+
+export default function DashboardHeader({ onToggleSidebar }: DashboardHeaderProps) {
   const tc = useTranslations("common");
   const pathname = usePathname();
   const locale = pathname.startsWith("/en") ? "en" : "pt";
   const switchLocale = locale === "pt" ? "en" : "pt";
   const [showMenu, setShowMenu] = useState(false);
   const { data: session } = useSession();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const userName = session?.user?.name || "User";
   const userInitials = userName
@@ -26,11 +31,40 @@ export default function DashboardHeader() {
     signOut({ callbackUrl: `/${locale}/login` });
   };
 
+  // Click-outside handler to close dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 backdrop-blur-lg px-6">
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <div className="relative">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 backdrop-blur-lg px-4 md:px-6">
+      {/* Left section */}
+      <div className="flex items-center gap-3">
+        {/* Hamburger button - visible on mobile only */}
+        <button
+          onClick={onToggleSidebar}
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 md:hidden"
+          aria-label="Toggle sidebar"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        {/* Search */}
+        <div className="relative hidden sm:block">
           <svg
             className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
             fill="none"
@@ -42,13 +76,13 @@ export default function DashboardHeader() {
           <input
             type="text"
             placeholder={`${tc("search")}...`}
-            className="h-9 w-64 rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="h-9 w-48 lg:w-64 rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
         </div>
       </div>
 
       {/* Right section */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
         {/* Language Switch */}
         <Link
           href={`/${switchLocale}/dashboard`}
@@ -66,7 +100,7 @@ export default function DashboardHeader() {
         </button>
 
         {/* User Menu */}
-        <div className="relative">
+        <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
             className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100"
@@ -75,13 +109,26 @@ export default function DashboardHeader() {
               <span className="text-xs font-bold text-white">{userInitials}</span>
             </div>
             <span className="hidden sm:block text-sm font-medium text-gray-700">{userName}</span>
+            <svg className="hidden sm:block h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-lg">
+            <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-lg animate-in fade-in slide-in-from-top-1 duration-200">
               <div className="px-4 py-2 border-b border-gray-100">
                 <p className="text-sm font-medium text-gray-900">{userName}</p>
                 <p className="text-xs text-gray-500">{session?.user?.email || ""}</p>
               </div>
+              <Link
+                href={`/${locale}/dashboard`}
+                onClick={() => setShowMenu(false)}
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                {tc("profile") || "Profile"}
+              </Link>
               <button
                 onClick={handleLogout}
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
