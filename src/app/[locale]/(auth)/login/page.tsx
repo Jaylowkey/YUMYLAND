@@ -37,7 +37,7 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect to dashboard on success
+      // Redirect to dashboard on success - middleware will handle MASTER redirect
       window.location.href = `/${locale}/dashboard`;
     } catch {
       setError("An unexpected error occurred");

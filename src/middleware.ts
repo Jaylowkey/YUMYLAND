@@ -78,6 +78,12 @@ export default async function middleware(request: NextRequest) {
       const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
       return NextResponse.redirect(dashboardUrl);
     }
+
+    // MASTER user trying to access regular dashboard - redirect to master panel
+    if (isProtectedRoute && token.role === "MASTER") {
+      const masterUrl = new URL(`/${locale}/master`, request.url);
+      return NextResponse.redirect(masterUrl);
+    }
   }
 
   // Apply next-intl middleware for locale handling
