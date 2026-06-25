@@ -114,7 +114,7 @@ export default function CustomersPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-        <p className="text-sm text-gray-500">{total} clientes cadastrados</p>
+        <p className="text-sm text-gray-500">{total} {t("registered")}</p>
       </div>
 
       {/* Error */}
@@ -187,7 +187,7 @@ export default function CustomersPage() {
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("name")}</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("level")}</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("points")}</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Progresso</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-500">{t("progress")}</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("totalSpent")}</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-500">{t("joinDate")}</th>
                 </tr>
@@ -233,13 +233,13 @@ export default function CustomersPage() {
                                 />
                               </div>
                               <p className="text-xs text-gray-400 mt-0.5">
-                                Faltam {progress.remaining} pts
+                                {t("remaining", { count: progress.remaining })}
                               </p>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <span className="text-yellow-500">\u2605</span>
-                              Nivel maximo
+                              {t("maxLevel")}
                             </div>
                           )}
                         </div>
@@ -261,7 +261,7 @@ export default function CustomersPage() {
           {totalPages > 1 && (
             <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                Pagina {page} de {totalPages} ({total} clientes)
+                {t("paginationInfo", { page, totalPages, total })}
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -269,14 +269,14 @@ export default function CustomersPage() {
                   disabled={page <= 1}
                   className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Anterior
+                  {t("previous")}
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
                   className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Proximo
+                  {t("next")}
                 </button>
               </div>
             </div>

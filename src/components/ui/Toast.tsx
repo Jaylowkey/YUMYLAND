@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type ToastVariant = "success" | "error" | "info" | "warning";
 
@@ -32,6 +32,12 @@ const variantIcons: Record<ToastVariant, string> = {
 
 function Toast({ toast, onDismiss }: ToastProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const onDismissRef = useRef(onDismiss);
+
+  // Keep the ref up-to-date with the latest callback
+  useEffect(() => {
+    onDismissRef.current = onDismiss;
+  }, [onDismiss]);
 
   useEffect(() => {
     // Trigger enter animation
@@ -40,14 +46,14 @@ function Toast({ toast, onDismiss }: ToastProps) {
     // Auto-dismiss after 4 seconds
     const dismissTimer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(() => onDismiss(toast.id), 300);
+      setTimeout(() => onDismissRef.current(toast.id), 300);
     }, 4000);
 
     return () => {
       clearTimeout(showTimer);
       clearTimeout(dismissTimer);
     };
-  }, [toast.id, onDismiss]);
+  }, [toast.id]);
 
   return (
     <div
@@ -73,7 +79,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
       <button
         onClick={() => {
           setIsVisible(false);
-          setTimeout(() => onDismiss(toast.id), 300);
+          setTimeout(() => onDismissRef.current(toast.id), 300);
         }}
         className="flex-shrink-0 rounded p-0.5 opacity-70 hover:opacity-100 transition-opacity"
       >

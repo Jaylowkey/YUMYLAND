@@ -58,33 +58,33 @@ export default function CategoriesPage() {
           name: form.name,
           description: form.description,
         });
-        showToast("Categoria atualizada", "success");
+        showToast(t("categoryUpdated"), "success");
       } else {
         await apiPost("/api/categories", {
           name: form.name,
           description: form.description,
         });
-        showToast("Categoria criada com sucesso", "success");
+        showToast(t("categoryCreated"), "success");
       }
       setShowModal(false);
       await fetchCategories();
     } catch (err: any) {
-      showToast(err.message || "Erro ao salvar categoria", "error");
+      showToast(err.message || t("saveError"), "error");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Tem certeza que deseja remover esta categoria?")) {
+    if (!window.confirm(t("confirmDelete"))) {
       return;
     }
     try {
       await apiDelete(`/api/categories/${id}`);
-      showToast("Categoria removida", "success");
+      showToast(t("categoryRemoved"), "success");
       await fetchCategories();
     } catch (err: any) {
-      showToast(err.message || "Erro ao remover categoria", "error");
+      showToast(err.message || t("deleteError"), "error");
     }
   };
 
@@ -134,7 +134,7 @@ export default function CategoriesPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
           </svg>
           <p className="mt-4 text-sm text-gray-500">{t("noCategories")}</p>
-          <p className="mt-1 text-xs text-gray-400">Comece adicionando sua primeira categoria</p>
+          <p className="mt-1 text-xs text-gray-400">{t("startAdding")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -209,7 +209,7 @@ export default function CategoriesPage() {
               {tc("cancel")}
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Salvando..." : tc("save")}
+              {saving ? t("saving") : tc("save")}
             </Button>
           </div>
         </div>

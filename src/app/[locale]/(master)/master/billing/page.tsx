@@ -120,7 +120,7 @@ export default function MasterBillingPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">{t("billing")}</h1>
-        <p className="text-sm text-gray-400">Historico de cobrancas e pagamentos</p>
+        <p className="text-sm text-gray-400">{t("billingSubtitle")}</p>
       </div>
 
       {/* Error */}
@@ -133,25 +133,25 @@ export default function MasterBillingPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-xl border border-gray-800 bg-gray-800/50 p-4">
-          <p className="text-sm text-gray-400">Total Recebido</p>
+          <p className="text-sm text-gray-400">{t("totalReceived")}</p>
           <p className="text-xl font-bold text-green-400 mt-1">
             {formatCurrency(summary.totalReceived)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-800 bg-gray-800/50 p-4">
-          <p className="text-sm text-gray-400">Pendente</p>
+          <p className="text-sm text-gray-400">{t("pending")}</p>
           <p className="text-xl font-bold text-yellow-400 mt-1">
             {formatCurrency(summary.totalPending)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-800 bg-gray-800/50 p-4">
-          <p className="text-sm text-gray-400">Falharam</p>
+          <p className="text-sm text-gray-400">{t("failed")}</p>
           <p className="text-xl font-bold text-red-400 mt-1">
             {formatCurrency(summary.totalFailed)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-800 bg-gray-800/50 p-4">
-          <p className="text-sm text-gray-400">Transacoes</p>
+          <p className="text-sm text-gray-400">{t("transactions")}</p>
           <p className="text-xl font-bold text-white mt-1">
             {summary.transactionCount}
           </p>
@@ -161,11 +161,11 @@ export default function MasterBillingPage() {
       {/* Billing History */}
       <div className="rounded-xl border border-gray-800 bg-gray-800/50 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-700">
-          <h2 className="text-lg font-semibold text-white">Historico de Cobrancas</h2>
+          <h2 className="text-lg font-semibold text-white">{t("billingHistory")}</h2>
         </div>
         {payments.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-400">Nenhum pagamento encontrado</p>
+            <p className="text-gray-400">{t("noPayments")}</p>
           </div>
         ) : (
           <>
@@ -173,12 +173,12 @@ export default function MasterBillingPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-700 bg-gray-800">
-                    <th className="px-4 py-3 text-left font-medium text-gray-400">Empresa</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-400">Valor</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-400">Metodo</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-400">Data</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-400">Referencia</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-400">Status</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-400">{t("company")}</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-400">{t("amount")}</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-400">{t("method")}</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-400">{t("date")}</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-400">{t("reference")}</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-400">{t("status")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
@@ -224,12 +224,12 @@ export default function MasterBillingPage() {
                           }`}
                         >
                           {payment.status === "completed"
-                            ? "\u2713 Pago"
+                            ? `\u2713 ${t("statusPaid")}`
                             : payment.status === "failed"
-                            ? "\u2717 Falhou"
+                            ? `\u2717 ${t("statusFailed")}`
                             : payment.status === "refunded"
-                            ? "\u21A9 Reembolsado"
-                            : "\u23F3 Pendente"}
+                            ? `\u21A9 ${t("statusRefunded")}`
+                            : `\u23F3 ${t("statusPending")}`}
                         </span>
                       </td>
                     </tr>
@@ -242,7 +242,7 @@ export default function MasterBillingPage() {
             {pagination.totalPages > 1 && (
               <div className="px-6 py-4 border-t border-gray-700 flex items-center justify-between">
                 <p className="text-sm text-gray-400">
-                  Pagina {pagination.page} de {pagination.totalPages} ({pagination.total} registros)
+                  {t("paginationInfo", { page: pagination.page, totalPages: pagination.totalPages, total: pagination.total })}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -250,14 +250,14 @@ export default function MasterBillingPage() {
                     disabled={pagination.page <= 1}
                     className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Anterior
+                    {t("previous")}
                   </button>
                   <button
                     onClick={() => goToPage(pagination.page + 1)}
                     disabled={pagination.page >= pagination.totalPages}
                     className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Proximo
+                    {t("next")}
                   </button>
                 </div>
               </div>

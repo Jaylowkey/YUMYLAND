@@ -171,7 +171,18 @@
     "unavailable": "Unavailable",
     "promotion": "Promotion",
     "combo": "Combo",
-    "noProducts": "No products registered yet."
+    "noProducts": "No products registered yet.",
+    "confirmDelete": "Are you sure you want to remove this product?",
+    "productUpdated": "Product updated",
+    "productCreated": "Product created successfully",
+    "productRemoved": "Product removed",
+    "productDeactivated": "Product deactivated",
+    "productActivated": "Product activated",
+    "saveError": "Error saving product",
+    "deleteError": "Error removing product",
+    "updateError": "Error updating product",
+    "saving": "Saving...",
+    "startAdding": "Start by adding your first product"
   },
   "categories": {
     "title": "Categories",
@@ -180,7 +191,15 @@
     "name": "Name",
     "description": "Description",
     "productCount": "Products",
-    "noCategories": "No categories registered yet."
+    "noCategories": "No categories registered yet.",
+    "confirmDelete": "Are you sure you want to remove this category?",
+    "categoryUpdated": "Category updated",
+    "categoryCreated": "Category created successfully",
+    "categoryRemoved": "Category removed",
+    "saveError": "Error saving category",
+    "deleteError": "Error removing category",
+    "saving": "Saving...",
+    "startAdding": "Start by adding your first category"
   },
   "reservations": {
     "title": "Reservations",
@@ -198,7 +217,16 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "complete": "Complete",
-    "noReservations": "No reservations found."
+    "noReservations": "No reservations found.",
+    "confirmCancel": "Are you sure you want to cancel this reservation?",
+    "confirmComplete": "Are you sure you want to complete this reservation?",
+    "reservationConfirmed": "Reservation confirmed",
+    "reservationCancelled": "Reservation cancelled",
+    "reservationCompleted": "Reservation completed",
+    "statusUpdated": "Status updated",
+    "updateError": "Error updating reservation",
+    "totalReservations": "total reservations",
+    "today": "Today"
   },
   "customers": {
     "title": "Customers",
@@ -219,7 +247,14 @@
     "loyaltyDescription": "100 MZN = 1 point | 100 points = 100 MZN discount",
     "becomeLoyal": "Become a Regular Customer",
     "digitalCard": "Digital Card",
-    "noCustomers": "No customers registered yet."
+    "noCustomers": "No customers registered yet.",
+    "registered": "registered customers",
+    "remaining": "{count} pts remaining",
+    "maxLevel": "Maximum level",
+    "progress": "Progress",
+    "paginationInfo": "Page {page} of {totalPages} ({total} customers)",
+    "previous": "Previous",
+    "next": "Next"
   },
   "menu": {
     "title": "Menu",
@@ -264,6 +299,25 @@
       "basic": "Basic",
       "professional": "Professional",
       "premium": "Premium"
-    }
+    },
+    "billingHistory": "Billing History",
+    "billingSubtitle": "Payment history and billing records",
+    "noPayments": "No payments found",
+    "totalReceived": "Total Received",
+    "pending": "Pending",
+    "failed": "Failed",
+    "transactions": "Transactions",
+    "company": "Company",
+    "amount": "Amount",
+    "method": "Method",
+    "date": "Date",
+    "reference": "Reference",
+    "paginationInfo": "Page {page} of {totalPages} ({total} records)",
+    "previous": "Previous",
+    "next": "Next",
+    "statusPaid": "Paid",
+    "statusFailed": "Failed",
+    "statusRefunded": "Refunded",
+    "statusPending": "Pending"
   }
 }

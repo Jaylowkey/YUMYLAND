@@ -83,52 +83,44 @@ export default function RegisterPage() {
     }
   };
 
+  const validateForm = useCallback(
+    (formData: typeof form): FieldErrors => {
+      const errors: FieldErrors = {};
+
+      if (!formData.companyName.trim()) {
+        errors.companyName = locale === "pt" ? "Nome da empresa obrigatorio" : "Company name is required";
+      }
+      if (!formData.ownerName.trim()) {
+        errors.ownerName = locale === "pt" ? "Nome do proprietario obrigatorio" : "Owner name is required";
+      }
+      if (!formData.email.trim()) {
+        errors.email = locale === "pt" ? "Email obrigatorio" : "Email is required";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        errors.email = locale === "pt" ? "Email invalido" : "Invalid email address";
+      }
+      if (!formData.phone.trim()) {
+        errors.phone = locale === "pt" ? "Telefone obrigatorio" : "Phone is required";
+      }
+      if (formData.password.length < 6) {
+        errors.password = locale === "pt" ? "Minimo 6 caracteres" : "Minimum 6 characters";
+      }
+      if (formData.confirmPassword !== formData.password) {
+        errors.confirmPassword = locale === "pt" ? "As senhas nao coincidem" : "Passwords do not match";
+      }
+
+      return errors;
+    },
+    [locale]
+  );
+
   const validateField = useCallback(
     (field: string, value: string) => {
-      let error = "";
-      switch (field) {
-        case "companyName":
-          if (!value.trim()) {
-            error = locale === "pt" ? "Nome da empresa obrigatorio" : "Company name is required";
-          }
-          break;
-        case "ownerName":
-          if (!value.trim()) {
-            error = locale === "pt" ? "Nome do proprietario obrigatorio" : "Owner name is required";
-          }
-          break;
-        case "email":
-          if (!value.trim()) {
-            error = locale === "pt" ? "Email obrigatorio" : "Email is required";
-          } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            error = locale === "pt" ? "Email invalido" : "Invalid email address";
-          }
-          break;
-        case "phone":
-          if (!value.trim()) {
-            error = locale === "pt" ? "Telefone obrigatorio" : "Phone is required";
-          }
-          break;
-        case "password":
-          if (value.length > 0 && value.length < 6) {
-            error =
-              locale === "pt"
-                ? "Minimo 6 caracteres"
-                : "Minimum 6 characters";
-          }
-          break;
-        case "confirmPassword":
-          if (value && value !== form.password) {
-            error =
-              locale === "pt"
-                ? "As senhas nao coincidem"
-                : "Passwords do not match";
-          }
-          break;
-      }
-      setFieldErrors((prev) => ({ ...prev, [field]: error || undefined }));
+      // Run full validation and pick the relevant field error
+      const currentForm = { ...form, [field]: value };
+      const errors = validateForm(currentForm);
+      setFieldErrors((prev) => ({ ...prev, [field]: errors[field as keyof FieldErrors] || undefined }));
     },
-    [locale, form.password]
+    [form, validateForm]
   );
 
   const handleBlur = (field: string) => {
@@ -142,26 +134,8 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
-    // Validate all fields
-    const errors: FieldErrors = {};
-    if (!form.companyName.trim()) {
-      errors.companyName = locale === "pt" ? "Nome da empresa obrigatorio" : "Company name is required";
-    }
-    if (!form.ownerName.trim()) {
-      errors.ownerName = locale === "pt" ? "Nome do proprietario obrigatorio" : "Owner name is required";
-    }
-    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      errors.email = locale === "pt" ? "Email invalido" : "Invalid email address";
-    }
-    if (!form.phone.trim()) {
-      errors.phone = locale === "pt" ? "Telefone obrigatorio" : "Phone is required";
-    }
-    if (form.password.length < 6) {
-      errors.password = locale === "pt" ? "Minimo 6 caracteres" : "Minimum 6 characters";
-    }
-    if (form.password !== form.confirmPassword) {
-      errors.confirmPassword = locale === "pt" ? "As senhas nao coincidem" : "Passwords do not match";
-    }
+    // Validate all fields using the single source of truth
+    const errors = validateForm(form);
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);

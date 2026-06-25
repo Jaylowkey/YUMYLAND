@@ -38,15 +38,12 @@ export default function ReservationsPage() {
   }, [filter]);
 
   const updateStatus = async (id: string, status: Reservation["status"]) => {
-    const actionLabels: Record<string, string> = {
-      confirmed: "confirmar",
-      cancelled: "cancelar",
-      completed: "completar",
-    };
-    const actionLabel = actionLabels[status] || "atualizar";
-
-    if (status === "cancelled" || status === "completed") {
-      if (!window.confirm(`Tem certeza que deseja ${actionLabel} esta reserva?`)) {
+    if (status === "cancelled") {
+      if (!window.confirm(t("confirmCancel"))) {
+        return;
+      }
+    } else if (status === "completed") {
+      if (!window.confirm(t("confirmComplete"))) {
         return;
       }
     }
@@ -54,14 +51,14 @@ export default function ReservationsPage() {
     try {
       await apiPatch(`/api/reservations/${id}`, { status });
       const successLabels: Record<string, string> = {
-        confirmed: "Reserva confirmada",
-        cancelled: "Reserva cancelada",
-        completed: "Reserva concluida",
+        confirmed: t("reservationConfirmed"),
+        cancelled: t("reservationCancelled"),
+        completed: t("reservationCompleted"),
       };
-      showToast(successLabels[status] || "Status atualizado", "success");
+      showToast(successLabels[status] || t("statusUpdated"), "success");
       await fetchReservations(filter);
     } catch (err: any) {
-      showToast(err.message || "Erro ao atualizar reserva", "error");
+      showToast(err.message || t("updateError"), "error");
     }
   };
 
@@ -109,7 +106,7 @@ export default function ReservationsPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-        <p className="text-sm text-gray-500">{reservations.length} reservas no total</p>
+        <p className="text-sm text-gray-500">{reservations.length} {t("totalReservations")}</p>
       </div>
 
       {/* Error */}
@@ -176,7 +173,7 @@ export default function ReservationsPage() {
                       )}
                       {isToday(reservation.date) && (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-700">
-                          Hoje
+                          {t("today")}
                         </span>
                       )}
                     </div>
